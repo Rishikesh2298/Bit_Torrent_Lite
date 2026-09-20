@@ -1,0 +1,11 @@
+# Core dependencies
+# (No external dependencies for core — uses only Python stdlib)
+
+# Testing
+pytest>=7.0.0
+pytest-timeout>=2.1.0
+
+# Experiments & Plotting
+matplotlib>=3.5.0
+pandas>=1.4.0
+numpy>=1.22.0
