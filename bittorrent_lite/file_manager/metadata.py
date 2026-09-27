@@ -1,76 +1,179 @@
-"""
-Torrent Metadata — Rishikesh's Module
-
-Creates, saves, and loads the .torrent.json metadata file.
-This is the BitTorrent-Lite equivalent of a .torrent file.
-
-The `file_id` is the SHA-256 of the exact bytes of the metadata file.
-This prevents circular hashing issues and JSON reserialization ambiguity.
-
-Interface:
-    create_metadata(file_path, piece_size) -> TorrentMetadata
-    save_metadata(metadata, output_path) -> None
-    load_metadata(metadata_path) -> tuple[TorrentMetadata, str]
-    validate_metadata(metadata, file_id) -> None
-"""
-
+import hashlib
 import json
 from pathlib import Path
 
 from bittorrent_lite.types import TorrentMetadata
-from bittorrent_lite.config import PIECE_SIZE, PROTOCOL_VERSION
+from bittorrent_lite.config import (
+    PIECE_SIZE,
+    PROTOCOL_VERSION,
+    MAX_FILE_SIZE,
+    HASH_ALGORITHM
+)
+
+from bittorrent_lite.file_manager.hasher import hash_file, hash_piece
+from bittorrent_lite.file_manager.splitter import split_file
 
 
-def create_metadata(file_path: str, piece_size: int = PIECE_SIZE) -> TorrentMetadata:
-    """
-    Create torrent metadata for a file.
+def calc_num_pieces(file_size: int, piece_size: int) -> int:
 
-    1. Validates the file exists and is not empty.
-    2. Hashes the entire file.
-    3. Splits the file into pieces and hashes each piece.
-    4. Returns the populated TorrentMetadata object.
-    """
-    # TODO: Rishikesh — implement this
-    raise NotImplementedError("create_metadata not yet implemented")
+    if file_size < 0:
+        raise ValueError("file_size cannot be negative")
+
+    if piece_size <= 0:
+        raise ValueError("piece_size must be greater than zero")
+
+    return (file_size + piece_size - 1) // piece_size
 
 
-def save_metadata(metadata: TorrentMetadata, output_path: str) -> None:
-    """
-    Serialize metadata to a JSON file.
+def create_metadata(
+    file_path: str,
+    piece_size: int = PIECE_SIZE
+) -> TorrentMetadata:
 
-    IMPORTANT: For deterministic hashing, the JSON must be canonical.
-    Use `json.dump(..., sort_keys=True, separators=(',', ':'))`
-    so that every peer produces the exact same file bytes.
-    """
-    # TODO: Rishikesh — implement this
-    raise NotImplementedError("save_metadata not yet implemented")
+    path = Path(file_path)
+
+    if not path.exists():
+        raise FileNotFoundError(file_path)
+
+    if not path.is_file():
+        raise ValueError("source path is not a file")
+
+    if piece_size <= 0:
+        raise ValueError("piece_size must be greater than zero")
+
+    file_size = path.stat().st_size
+
+    if file_size == 0:
+        raise ValueError("cannot create metadata for an empty file")
+
+    if file_size > MAX_FILE_SIZE:
+        raise ValueError("file exceeds maximum allowed size")
+
+    piece_hashes = []
+
+    for index, data in split_file(str(path), piece_size):
+        piece_hashes.append(hash_piece(data))
+
+    file_sha256 = hash_file(str(path))
+
+    return TorrentMetadata(
+        format_version=PROTOCOL_VERSION,
+        filename=path.name,
+        file_size=file_size,
+        piece_size=piece_size,
+        piece_hashes=piece_hashes,
+        file_sha256=file_sha256
+    )
 
 
-def load_metadata(metadata_path: str) -> tuple[TorrentMetadata, str]:
-    """
-    Load metadata from a JSON file and compute its file_id.
+def save_metadata(
+    metadata: TorrentMetadata,
+    output_path: str
+) -> None:
 
-    1. Reads the raw bytes of the file.
-    2. Computes file_id = SHA-256(raw_bytes).
-    3. Parses the JSON into a TorrentMetadata object.
-    4. Validates the fields (e.g., hash list matches piece count).
-    
-    Returns:
-        (metadata, file_id)
-    """
-    # TODO: Rishikesh — implement this
-    raise NotImplementedError("load_metadata not yet implemented")
+    data = {
+        "file_sha256": metadata.file_sha256,
+        "file_size": metadata.file_size,
+        "filename": metadata.filename,
+        "format_version": metadata.format_version,
+        "piece_hashes": metadata.piece_hashes,
+        "piece_size": metadata.piece_size
+    }
+
+    with open(output_path, "w", encoding="utf-8") as file:
+        json.dump(
+            data,
+            file,
+            sort_keys=True,
+            separators=(",", ":")
+        )
 
 
-def validate_metadata(metadata: TorrentMetadata, file_id: str) -> None:
-    """
-    Verify metadata invariants.
+def load_metadata(
+    metadata_path: str
+) -> tuple[TorrentMetadata, str]:
 
-    - piece_size must be > 0
-    - file_size must be > 0
-    - format_version must be known
-    - num_pieces must exactly match len(piece_hashes)
-    - num_pieces must match ceil(file_size / piece_size)
-    """
-    # TODO: Rishikesh — implement this
-    raise NotImplementedError("validate_metadata not yet implemented")
+    path = Path(metadata_path)
+
+    if not path.exists():
+        raise FileNotFoundError(metadata_path)
+
+    with open(path, "rb") as file:
+        raw_data = file.read()
+
+    hasher = hashlib.new(HASH_ALGORITHM)
+    hasher.update(raw_data)
+
+    file_id = hasher.hexdigest()
+
+    data = json.loads(raw_data.decode("utf-8"))
+
+    metadata = TorrentMetadata(
+        format_version=data["format_version"],
+        filename=data["filename"],
+        file_size=data["file_size"],
+        piece_size=data["piece_size"],
+        piece_hashes=data["piece_hashes"],
+        file_sha256=data["file_sha256"]
+    )
+
+    validate_metadata(metadata, file_id)
+
+    return metadata, file_id
+
+
+def validate_metadata(
+    metadata: TorrentMetadata,
+    file_id: str
+) -> None:
+
+    if metadata.piece_size <= 0:
+        raise ValueError("piece_size must be greater than zero")
+
+    if metadata.file_size <= 0:
+        raise ValueError("file_size must be greater than zero")
+
+    if metadata.file_size > MAX_FILE_SIZE:
+        raise ValueError("file exceeds maximum allowed size")
+
+    if metadata.format_version != PROTOCOL_VERSION:
+        raise ValueError("unsupported metadata format version")
+
+    expected_num_pieces = calc_num_pieces(
+        metadata.file_size,
+        metadata.piece_size
+    )
+
+    if metadata.num_pieces != expected_num_pieces:
+        raise ValueError("piece count does not match file size")
+
+    if len(metadata.piece_hashes) != metadata.num_pieces:
+        raise ValueError(
+            "piece hash count does not match piece count"
+        )
+
+    if not isinstance(metadata.filename, str):
+        raise ValueError("filename must be a string")
+
+    if metadata.filename == "":
+        raise ValueError("filename cannot be empty")
+
+    if not isinstance(metadata.file_sha256, str):
+        raise ValueError("file_sha256 must be a string")
+
+    if len(metadata.file_sha256) != 64:
+        raise ValueError("invalid file_sha256")
+
+    if not isinstance(file_id, str):
+        raise ValueError("file_id must be a string")
+
+    if len(file_id) != 64:
+        raise ValueError("invalid file_id")
+
+    for piece_hash in metadata.piece_hashes:
+
+        if not isinstance(piece_hash, str):
+            raise ValueError("piece hash must be a string")
+
+        if len(piece_hash) != 64:
+            raise ValueError("invalid piece hash")
