@@ -1,73 +1,44 @@
-"""
-Piece Hasher — Rishikesh's Module
-
-Provides cryptographic hashing for piece integrity verification.
-
-Interface:
-    hash_piece(data) -> str             # compute SHA-256 hex digest of a piece
-    verify_piece(data, expected) -> bool # compare computed hash to expected
-    hash_file(file_path) -> str         # stream entire file through SHA-256
-
-How it's used:
-    1. During metadata creation: hash every piece to build the piece hash list
-    2. During download: verify received piece data against expected hash from metadata
-    3. During metadata creation: hash the entire file for file_sha256
-
-Security note:
-    SHA-256 is used because it's collision-resistant. If an attacker or
-    network error corrupts a piece, the hash will (almost certainly) not match.
-    A hash alone does NOT authenticate the sender — it only verifies content
-    against trusted metadata.
-"""
-
 import hashlib
 
-from bittorrent_lite.config import HASH_ALGORITHM
+from bittorrent_lite.config import HASH_ALGORITHM, PIECE_SIZE
+
 
 
 def hash_piece(data: bytes) -> str:
-    """
-    Compute the cryptographic hash of a piece.
 
-    Args:
-        data: Raw bytes of the piece.
+    if not isinstance(data, bytes):
+        raise TypeError("data must be bytes")
 
-    Returns:
-        Lowercase hex digest string (e.g., "a3f2b8c1d4...").
-    """
-    # TODO: Rishikesh — implement using hashlib
-    raise NotImplementedError("hash_piece not yet implemented")
+    hasher = hashlib.new(HASH_ALGORITHM)
+    hasher.update(data)
+
+    return hasher.hexdigest()
 
 
 def verify_piece(data: bytes, expected_hash: str) -> bool:
-    """
-    Verify that piece data matches its expected hash.
 
-    Args:
-        data: Raw bytes of the received piece.
-        expected_hash: The expected lowercase hex digest from metadata.
+    if not isinstance(data, bytes):
+        return False
 
-    Returns:
-        True if hash(data) == expected_hash, False otherwise.
-    """
-    # TODO: Rishikesh — implement this
-    raise NotImplementedError("verify_piece not yet implemented")
+    if not isinstance(expected_hash, str):
+        return False
+
+    actual_hash = hash_piece(data)
+
+    return actual_hash == expected_hash.lower()
 
 
 def hash_file(file_path: str) -> str:
-    """
-    Compute the SHA-256 hash of an entire file by streaming.
 
-    Reads the file in chunks to avoid loading it all into memory.
+    hasher = hashlib.new(HASH_ALGORITHM)
 
-    Args:
-        file_path: Path to the file.
+    with open(file_path, "rb") as file:
+        while True:
+            chunk = file.read(PIECE_SIZE)
 
-    Returns:
-        Lowercase hex digest string.
+            if chunk == b"":
+                break
 
-    Raises:
-        FileNotFoundError: If file_path does not exist.
-    """
-    # TODO: Rishikesh — implement by streaming in 64 KiB chunks
-    raise NotImplementedError("hash_file not yet implemented")
+            hasher.update(chunk)
+
+    return hasher.hexdigest()

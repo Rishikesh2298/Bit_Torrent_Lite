@@ -1,92 +1,228 @@
-"""
-File Store — Rishikesh's Module
-
-Disk-backed piece storage and retrieval.
-Replaces the old in-memory dict from PeerState.
-
-Interface:
-    FileStore(metadata, file_id, pieces_dir, source_path)
-    read_piece(index) -> bytes
-    verify_and_store(index, data) -> bool
-    has_piece(index) -> bool
-    get_bitfield() -> list[int]
-    assemble_file(output_path) -> bool
-    validate_source() -> None
-"""
-
-import os
 from pathlib import Path
 
 from bittorrent_lite.types import TorrentMetadata
 from bittorrent_lite.config import DEFAULT_PIECES_DIR
 
+from bittorrent_lite.file_manager.hasher import (
+    hash_file,
+    verify_piece
+)
+
 
 class FileStore:
-    """
-    Manages reading and writing pieces to/from disk.
-    For seeders, it reads directly from the source file.
-    For downloaders, it stores verified pieces in pieces_dir.
-    """
 
-    def __init__(self, metadata: TorrentMetadata, file_id: str,
-                 pieces_dir: str = DEFAULT_PIECES_DIR,
-                 source_path: str | None = None):
-        """
-        Initialize the file store.
+    def __init__(
+        self,
+        metadata: TorrentMetadata,
+        file_id: str,
+        pieces_dir: str = DEFAULT_PIECES_DIR,
+        source_path: str | None = None
+    ):
 
-        Args:
-            metadata: The torrent metadata.
-            file_id: The unique file identifier (info_hash).
-            pieces_dir: Where to store downloaded pieces.
-            source_path: If seeding, the path to the complete source file.
-        """
         self.metadata = metadata
         self.file_id = file_id
         self.pieces_dir = Path(pieces_dir) / self.file_id
         self.source_path = Path(source_path) if source_path else None
-        
-        # In-memory track of what we have on disk
+
         self._bitfield: list[int] = [0] * metadata.num_pieces
-        self._lock = None  # TODO: Add threading.Lock
+        self._lock = None
+
+        if self.source_path is None:
+            self.pieces_dir.mkdir(
+                parents=True,
+                exist_ok=True
+            )
+
+    def _validate_index(self, index: int) -> None:
+
+        if not isinstance(index, int) or isinstance(index, bool):
+            raise IndexError("piece index must be an integer")
+
+        if index < 0 or index >= self.metadata.num_pieces:
+            raise IndexError("piece index out of range")
+
+    def _piece_path(self, index: int) -> Path:
+
+        return self.pieces_dir / f"{index}.piece"
 
     def read_piece(self, index: int) -> bytes:
-        """
-        Read piece bytes from disk (either from source file or piece file).
-        Raises IndexError if invalid, or FileNotFoundError if not owned.
-        """
-        # TODO: Rishikesh — implement this
-        raise NotImplementedError
 
-    def verify_and_store(self, index: int, data: bytes) -> bool:
-        """
-        Verify the piece hash and store it to disk if valid.
-        Never marks HAVE or writes to disk if the hash fails.
-        """
-        # TODO: Rishikesh — implement this
-        raise NotImplementedError
+        self._validate_index(index)
+
+        if self.source_path is not None:
+
+            offset = index * self.metadata.piece_size
+
+            with open(self.source_path, "rb") as file:
+                file.seek(offset)
+                data = file.read(
+                    self.metadata.expected_piece_size(index)
+                )
+
+            if len(data) != self.metadata.expected_piece_size(index):
+                raise FileNotFoundError(
+                    f"piece {index} is not available"
+                )
+
+            return data
+
+        piece_path = self._piece_path(index)
+
+        if not piece_path.exists():
+            raise FileNotFoundError(
+                f"piece {index} is not available"
+            )
+
+        with open(piece_path, "rb") as file:
+            data = file.read()
+
+        if not verify_piece(
+            data,
+            self.metadata.piece_hashes[index]
+        ):
+            raise ValueError(
+                f"piece {index} failed hash verification"
+            )
+
+        return data
+
+    def verify_and_store(
+        self,
+        index: int,
+        data: bytes
+    ) -> bool:
+
+        self._validate_index(index)
+
+        if not isinstance(data, bytes):
+            return False
+
+        expected_size = self.metadata.expected_piece_size(index)
+
+        if len(data) != expected_size:
+            return False
+
+        expected_hash = self.metadata.piece_hashes[index]
+
+        if not verify_piece(data, expected_hash):
+            return False
+
+        self.pieces_dir.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        piece_path = self._piece_path(index)
+
+        with open(piece_path, "wb") as file:
+            file.write(data)
+
+        self._bitfield[index] = 1
+
+        return True
 
     def has_piece(self, index: int) -> bool:
-        """Return True if this piece is verified and stored."""
-        # TODO: Rishikesh — implement this
-        raise NotImplementedError
+
+        self._validate_index(index)
+
+        if self._bitfield[index] == 1:
+            return True
+
+        if self.source_path is not None:
+            return False
+
+        piece_path = self._piece_path(index)
+
+        if not piece_path.exists():
+            return False
+
+        with open(piece_path, "rb") as file:
+            data = file.read()
+
+        expected_size = self.metadata.expected_piece_size(index)
+
+        if len(data) != expected_size:
+            return False
+
+        if not verify_piece(
+            data,
+            self.metadata.piece_hashes[index]
+        ):
+            return False
+
+        self._bitfield[index] = 1
+
+        return True
 
     def get_bitfield(self) -> list[int]:
-        """Return a copy of the current piece ownership."""
-        # TODO: Rishikesh — implement this
-        raise NotImplementedError
 
-    def assemble_file(self, output_path: str) -> bool:
-        """
-        Concatenate all piece files into the final file.
-        Truncates padding in the last piece, verifies whole-file hash.
-        """
-        # TODO: Rishikesh — implement this
-        raise NotImplementedError
+        return self._bitfield.copy()
+
+    def assemble_file(
+        self,
+        output_path: str
+    ) -> bool:
+
+        for index in range(self.metadata.num_pieces):
+
+            if not self.has_piece(index):
+                return False
+
+        output = Path(output_path)
+
+        with open(output, "wb") as file:
+
+            for index in range(self.metadata.num_pieces):
+
+                data = self.read_piece(index)
+
+                file.write(data)
+
+        actual_hash = hash_file(str(output))
+
+        if actual_hash != self.metadata.file_sha256:
+            return False
+
+        return True
 
     def validate_source(self) -> None:
-        """
-        For seeders: verify the entire source_path against all piece hashes.
-        Updates the bitfield to all 1s if valid. Raises error if invalid.
-        """
-        # TODO: Rishikesh — implement this
-        raise NotImplementedError
+
+        if self.source_path is None:
+            raise ValueError(
+                "source_path is required for validation"
+            )
+
+        if not self.source_path.exists():
+            raise FileNotFoundError(
+                str(self.source_path)
+            )
+
+        if not self.source_path.is_file():
+            raise ValueError(
+                "source_path is not a file"
+            )
+
+        actual_file_hash = hash_file(
+            str(self.source_path)
+        )
+
+        if actual_file_hash != self.metadata.file_sha256:
+            raise ValueError(
+                "source file hash does not match metadata"
+            )
+
+        for index in range(self.metadata.num_pieces):
+
+            data = self.read_piece(index)
+
+            expected_hash = self.metadata.piece_hashes[index]
+
+            if not verify_piece(
+                data,
+                expected_hash
+            ):
+                raise ValueError(
+                    f"source piece {index} failed hash verification"
+                )
+
+            self._bitfield[index] = 1
