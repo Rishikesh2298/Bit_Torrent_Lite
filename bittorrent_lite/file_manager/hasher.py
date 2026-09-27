@@ -1,8 +1,5 @@
 import hashlib
-
 from bittorrent_lite.config import HASH_ALGORITHM, PIECE_SIZE
-
-
 
 def hash_piece(data: bytes) -> str:
 
@@ -13,7 +10,6 @@ def hash_piece(data: bytes) -> str:
     hasher.update(data)
 
     return hasher.hexdigest()
-
 
 def verify_piece(data: bytes, expected_hash: str) -> bool:
 
@@ -26,7 +22,6 @@ def verify_piece(data: bytes, expected_hash: str) -> bool:
     actual_hash = hash_piece(data)
 
     return actual_hash == expected_hash.lower()
-
 
 def hash_file(file_path: str) -> str:
 

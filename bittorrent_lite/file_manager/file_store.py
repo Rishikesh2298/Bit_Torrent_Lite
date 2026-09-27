@@ -3,11 +3,7 @@ from pathlib import Path
 from bittorrent_lite.types import TorrentMetadata
 from bittorrent_lite.config import DEFAULT_PIECES_DIR
 
-from bittorrent_lite.file_manager.hasher import (
-    hash_file,
-    verify_piece
-)
-
+from bittorrent_lite.file_manager.hasher import (hash_file,verify_piece)
 
 class FileStore:
 
@@ -86,11 +82,7 @@ class FileStore:
 
         return data
 
-    def verify_and_store(
-        self,
-        index: int,
-        data: bytes
-    ) -> bool:
+    def verify_and_store(self,index: int,data: bytes) -> bool:
 
         self._validate_index(index)
 
@@ -158,10 +150,7 @@ class FileStore:
 
         return self._bitfield.copy()
 
-    def assemble_file(
-        self,
-        output_path: str
-    ) -> bool:
+    def assemble_file(self,output_path: str) -> bool:
 
         for index in range(self.metadata.num_pieces):
 

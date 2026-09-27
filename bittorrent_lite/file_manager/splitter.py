@@ -1,12 +1,7 @@
 from typing import Generator
-
 from bittorrent_lite.config import PIECE_SIZE
 
-
-def split_file(
-    file_path: str,
-    piece_size: int = PIECE_SIZE
-) -> Generator[tuple[int, bytes], None, None]:
+def split_file(file_path: str,piece_size: int = PIECE_SIZE) -> Generator[tuple[int, bytes], None, None]:
 
     if piece_size <= 0:
         raise ValueError("piece_size must be greater than zero")

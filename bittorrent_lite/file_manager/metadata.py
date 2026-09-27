@@ -3,16 +3,10 @@ import json
 from pathlib import Path
 
 from bittorrent_lite.types import TorrentMetadata
-from bittorrent_lite.config import (
-    PIECE_SIZE,
-    PROTOCOL_VERSION,
-    MAX_FILE_SIZE,
-    HASH_ALGORITHM
-)
+from bittorrent_lite.config import (PIECE_SIZE,PROTOCOL_VERSION,MAX_FILE_SIZE,HASH_ALGORITHM)
 
 from bittorrent_lite.file_manager.hasher import hash_file, hash_piece
 from bittorrent_lite.file_manager.splitter import split_file
-
 
 def calc_num_pieces(file_size: int, piece_size: int) -> int:
 
@@ -24,11 +18,7 @@ def calc_num_pieces(file_size: int, piece_size: int) -> int:
 
     return (file_size + piece_size - 1) // piece_size
 
-
-def create_metadata(
-    file_path: str,
-    piece_size: int = PIECE_SIZE
-) -> TorrentMetadata:
+def create_metadata(file_path: str,piece_size: int = PIECE_SIZE) -> TorrentMetadata:
 
     path = Path(file_path)
 
@@ -65,11 +55,7 @@ def create_metadata(
         file_sha256=file_sha256
     )
 
-
-def save_metadata(
-    metadata: TorrentMetadata,
-    output_path: str
-) -> None:
+def save_metadata(metadata: TorrentMetadata,output_path: str) -> None:
 
     data = {
         "file_sha256": metadata.file_sha256,
@@ -88,10 +74,7 @@ def save_metadata(
             separators=(",", ":")
         )
 
-
-def load_metadata(
-    metadata_path: str
-) -> tuple[TorrentMetadata, str]:
+def load_metadata(metadata_path: str) -> tuple[TorrentMetadata, str]:
 
     path = Path(metadata_path)
 
@@ -122,10 +105,7 @@ def load_metadata(
     return metadata, file_id
 
 
-def validate_metadata(
-    metadata: TorrentMetadata,
-    file_id: str
-) -> None:
+def validate_metadata(metadata: TorrentMetadata,file_id: str) -> None:
 
     if metadata.piece_size <= 0:
         raise ValueError("piece_size must be greater than zero")
@@ -139,18 +119,13 @@ def validate_metadata(
     if metadata.format_version != PROTOCOL_VERSION:
         raise ValueError("unsupported metadata format version")
 
-    expected_num_pieces = calc_num_pieces(
-        metadata.file_size,
-        metadata.piece_size
-    )
+    expected_num_pieces = calc_num_pieces(metadata.file_size,metadata.piece_size)
 
     if metadata.num_pieces != expected_num_pieces:
         raise ValueError("piece count does not match file size")
 
     if len(metadata.piece_hashes) != metadata.num_pieces:
-        raise ValueError(
-            "piece hash count does not match piece count"
-        )
+        raise ValueError("piece hash count does not match piece count")
 
     if not isinstance(metadata.filename, str):
         raise ValueError("filename must be a string")
