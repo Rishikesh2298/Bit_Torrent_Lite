@@ -30,3 +30,11 @@ experiments/data/
 
 # Logs
 *.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Pytest
+.pytest_cache/
