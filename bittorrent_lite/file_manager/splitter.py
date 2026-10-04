@@ -8,8 +8,8 @@ def split_file(
     piece_size: int = PIECE_SIZE
 ) -> Generator[tuple[int, bytes], None, None]:
 
-    if piece_size <= 0:
-        raise ValueError("piece_size must be greater than zero")
+    if type(piece_size) is not int or piece_size <= 0:
+        raise ValueError("piece_size must be a positive integer")
 
     with open(file_path, "rb") as file:
         index = 0

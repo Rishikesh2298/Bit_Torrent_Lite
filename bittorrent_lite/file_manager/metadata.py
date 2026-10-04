@@ -16,11 +16,11 @@ from bittorrent_lite.file_manager.splitter import split_file
 
 def calc_num_pieces(file_size: int, piece_size: int) -> int:
 
-    if file_size < 0:
-        raise ValueError("file_size cannot be negative")
+    if type(file_size) is not int or file_size < 0:
+        raise ValueError("file_size must be a nonnegative integer")
 
-    if piece_size <= 0:
-        raise ValueError("piece_size must be greater than zero")
+    if type(piece_size) is not int or piece_size <= 0:
+        raise ValueError("piece_size must be a positive integer")
 
     return (file_size + piece_size - 1) // piece_size
 
@@ -38,8 +38,8 @@ def create_metadata(
     if not path.is_file():
         raise ValueError("source path is not a file")
 
-    if piece_size <= 0:
-        raise ValueError("piece_size must be greater than zero")
+    if type(piece_size) is not int or piece_size <= 0:
+        raise ValueError("piece_size must be a positive integer")
 
     file_size = path.stat().st_size
 
@@ -70,6 +70,8 @@ def save_metadata(
     metadata: TorrentMetadata,
     output_path: str
 ) -> None:
+
+    validate_metadata(metadata, "0" * 64)
 
     data = {
         "file_sha256": metadata.file_sha256,
@@ -108,6 +110,11 @@ def load_metadata(
 
     data = json.loads(raw_data.decode("utf-8"))
 
+    required = {"format_version", "filename", "file_size", "piece_size",
+                "piece_hashes", "file_sha256"}
+    if not isinstance(data, dict) or not required.issubset(data):
+        raise ValueError("metadata must be an object with all required fields")
+
     metadata = TorrentMetadata(
         format_version=data["format_version"],
         filename=data["filename"],
@@ -127,17 +134,21 @@ def validate_metadata(
     file_id: str
 ) -> None:
 
-    if metadata.piece_size <= 0:
-        raise ValueError("piece_size must be greater than zero")
+    if type(metadata.piece_size) is not int or metadata.piece_size <= 0:
+        raise ValueError("piece_size must be a positive integer")
 
-    if metadata.file_size <= 0:
-        raise ValueError("file_size must be greater than zero")
+    if type(metadata.file_size) is not int or metadata.file_size <= 0:
+        raise ValueError("file_size must be a positive integer")
 
     if metadata.file_size > MAX_FILE_SIZE:
         raise ValueError("file exceeds maximum allowed size")
 
-    if metadata.format_version != PROTOCOL_VERSION:
+    if (type(metadata.format_version) is not int
+            or metadata.format_version != PROTOCOL_VERSION):
         raise ValueError("unsupported metadata format version")
+
+    if not isinstance(metadata.piece_hashes, list):
+        raise ValueError("piece_hashes must be a list")
 
     expected_num_pieces = calc_num_pieces(
         metadata.file_size,
@@ -147,33 +158,13 @@ def validate_metadata(
     if metadata.num_pieces != expected_num_pieces:
         raise ValueError("piece count does not match file size")
 
-    if len(metadata.piece_hashes) != metadata.num_pieces:
-        raise ValueError(
-            "piece hash count does not match piece count"
-        )
-
     if not isinstance(metadata.filename, str):
         raise ValueError("filename must be a string")
 
     if metadata.filename == "":
         raise ValueError("filename cannot be empty")
 
-    if not isinstance(metadata.file_sha256, str):
-        raise ValueError("file_sha256 must be a string")
-
-    if len(metadata.file_sha256) != 64:
-        raise ValueError("invalid file_sha256")
-
-    if not isinstance(file_id, str):
-        raise ValueError("file_id must be a string")
-
-    if len(file_id) != 64:
-        raise ValueError("invalid file_id")
-
-    for piece_hash in metadata.piece_hashes:
-
-        if not isinstance(piece_hash, str):
-            raise ValueError("piece hash must be a string")
-
-        if len(piece_hash) != 64:
-            raise ValueError("invalid piece hash")
+    for digest in [metadata.file_sha256, file_id, *metadata.piece_hashes]:
+        if (not isinstance(digest, str) or len(digest) != 64
+                or any(character not in "0123456789abcdef" for character in digest)):
+            raise ValueError("hashes must be 64 lowercase hexadecimal characters")

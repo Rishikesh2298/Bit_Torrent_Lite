@@ -29,7 +29,7 @@ Stale peer cleanup:
 """
 
 import threading
-from bittorrent_lite.types import PeerInfo
+from bittorrent_lite.types import PeerRecord as PeerInfo
 
 
 class TrackerState:

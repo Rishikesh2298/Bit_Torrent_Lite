@@ -35,6 +35,7 @@ Interface:
     PiecePicker.get_availability() -> list[int]    (for debugging/experiments)
 """
 
+import random
 import threading
 
 
@@ -42,8 +43,8 @@ class PiecePicker:
     """
     Rarest-first piece selection.
 
-    Maintains a global availability counter and provides piece
-    selection based on swarm-wide piece distribution.
+    Counts distinct connected neighbors' advertisements. Permission and
+    request-window checks belong to the coordinator before calling pick_piece.
     """
 
     def __init__(self, num_pieces: int):
@@ -53,49 +54,74 @@ class PiecePicker:
         Args:
             num_pieces: Total number of pieces in the torrent.
         """
+        if type(num_pieces) is not int or num_pieces < 0:
+            raise ValueError("num_pieces must be a nonnegative integer")
         self.num_pieces = num_pieces
         # availability[i] = number of connected peers that have piece i
         self.availability: list[int] = [0] * num_pieces
+        self._peer_bitfields: dict[str, list[bool]] = {}
         self._lock = threading.Lock()
+
+    def _check_bitfield(self, bitfield: list[bool]) -> None:
+        if len(bitfield) != self.num_pieces:
+            raise ValueError("bitfield length must match the piece count")
+        if any(type(bit) not in (int, bool) or bit not in (0, 1)
+               for bit in bitfield):
+            raise ValueError("bitfield entries must be zero or one")
+
+    def _recount(self) -> None:
+        """Recompute neighborhood counts while holding the picker lock."""
+        self.availability = [
+            sum(bits[index] for bits in self._peer_bitfields.values())
+            for index in range(self.num_pieces)
+        ]
 
     def update_availability(self, peer_id: str, bitfield: list[bool]) -> None:
         """
         Update availability counts when a new peer's bitfield is received.
 
-        For each piece the peer has, increment the counter.
+        Replace this neighbor's snapshot; repeated advertisements are idempotent.
 
         Args:
             peer_id: The peer whose bitfield was received.
             bitfield: The peer's bitfield (list of bools).
         """
-        # TODO: Prabhat — implement this
-        raise NotImplementedError
+        self._check_bitfield(bitfield)
+        with self._lock:
+            self._peer_bitfields[peer_id] = list(bitfield)
+            self._recount()
 
     def peer_has_piece(self, peer_id: str, piece_index: int) -> None:
         """
         Update availability when a HAVE message is received.
 
-        Increment availability[piece_index] by 1.
+        Mark the piece in this known neighbor's snapshot, counting it once.
 
         Args:
             peer_id: The peer that sent the HAVE.
             piece_index: The piece they now have.
         """
-        # TODO: Prabhat — implement this
-        raise NotImplementedError
+        if type(piece_index) is not int or not 0 <= piece_index < self.num_pieces:
+            raise ValueError("piece index is out of range")
+        with self._lock:
+            if peer_id not in self._peer_bitfields:
+                raise ValueError("HAVE requires a known neighbor bitfield")
+            self._peer_bitfields[peer_id][piece_index] = 1
+            self._recount()
 
     def peer_disconnected(self, peer_id: str, bitfield: list[bool]) -> None:
         """
         Update availability when a peer disconnects.
 
-        Decrement counts for all pieces the peer had.
+        Remove the stored snapshot once; repeated disconnects are harmless.
 
         Args:
             peer_id: The peer that disconnected.
-            bitfield: The peer's last known bitfield.
+            bitfield: Legacy caller snapshot; the stored snapshot is authoritative.
         """
-        # TODO: Prabhat — implement this
-        raise NotImplementedError
+        with self._lock:
+            self._peer_bitfields.pop(peer_id, None)
+            self._recount()
 
     def pick_piece(self, my_bitfield: list[bool], peer_bitfield: list[bool],
                    requested_pieces: set[int] | None = None) -> int | None:
@@ -116,8 +142,22 @@ class PiecePicker:
         Returns:
             Index of the piece to request, or None if nothing available.
         """
-        # TODO: Prabhat — implement this
-        raise NotImplementedError
+        self._check_bitfield(my_bitfield)
+        self._check_bitfield(peer_bitfield)
+        reserved = requested_pieces if requested_pieces is not None else set()
+        with self._lock:
+            candidates = [
+                index for index in range(self.num_pieces)
+                if not my_bitfield[index] and peer_bitfield[index]
+                and index not in reserved and self.availability[index] > 0
+            ]
+            if not candidates:
+                return None
+            minimum = min(self.availability[index] for index in candidates)
+            return random.choice([
+                index for index in candidates
+                if self.availability[index] == minimum
+            ])
 
     def get_availability(self) -> list[int]:
         """Return a copy of the current availability counts (for debugging)."""

@@ -47,7 +47,7 @@ class TorrentMetadata:
     def expected_piece_size(self, index: int) -> int:
         """Return the expected byte length of a piece."""
 
-        if index < 0 or index >= self.num_pieces:
+        if type(index) is not int or index < 0 or index >= self.num_pieces:
             raise IndexError(
                 f"Piece index {index} out of range "
                 f"[0, {self.num_pieces})"

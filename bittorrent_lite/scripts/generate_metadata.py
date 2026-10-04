@@ -9,7 +9,9 @@ Usage:
 """
 
 import argparse
+from pathlib import Path
 from bittorrent_lite.config import PIECE_SIZE
+from bittorrent_lite.file_manager.metadata import create_metadata, save_metadata
 
 
 def main():
@@ -23,17 +25,19 @@ def main():
 
     args = parser.parse_args()
 
-    # TODO: Wire up to file_manager.metadata once implemented:
-    # from bittorrent_lite.file_manager.metadata import create_metadata, save_metadata
-    # metadata = create_metadata(args.file, args.piece_size)
-    # save_metadata(metadata, args.output)
-    # print(f"Metadata saved: {args.output}")
-    # print(f"  File: {metadata.file_name}")
-    # print(f"  Size: {metadata.file_size} bytes")
-    # print(f"  Pieces: {metadata.num_pieces} x {metadata.piece_size} bytes")
-    # print(f"  Info hash: {metadata.info_hash}")
-
-    print("generate_metadata not yet implemented")
+    try:
+        source, output = Path(args.file), Path(args.output)
+        if source.resolve() == output.resolve() or (
+                source.exists() and output.exists() and source.samefile(output)):
+            raise ValueError("metadata output must differ from the source file")
+        metadata = create_metadata(args.file, args.piece_size)
+        save_metadata(metadata, args.output)
+    except (OSError, ValueError) as error:
+        parser.error(str(error))
+    print(f"Metadata saved: {args.output}")
+    print(f"  File: {metadata.filename}")
+    print(f"  Size: {metadata.file_size} bytes")
+    print(f"  Pieces: {metadata.num_pieces} x {metadata.piece_size} bytes")
 
 
 if __name__ == "__main__":

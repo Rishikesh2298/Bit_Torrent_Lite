@@ -20,7 +20,7 @@ This module does NOT depend on:
 import json
 import urllib.request
 import urllib.error
-from bittorrent_lite.types import PeerInfo
+from bittorrent_lite.types import PeerRecord as PeerInfo
 from bittorrent_lite.config import TRACKER_HOST, TRACKER_PORT
 
 

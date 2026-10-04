@@ -26,7 +26,7 @@ Do NOT implement this before the core P2P transfer works.
 import threading
 import random
 
-from bittorrent_lite.config import UNCHOKE_SLOTS, OPTIMISTIC_UNCHOKE_INTERVAL
+from bittorrent_lite.config import UNCHOKE_SLOTS
 
 
 class ChokingManager:
