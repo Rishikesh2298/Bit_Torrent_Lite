@@ -13,7 +13,7 @@ This module does NOT implement protocol logic — it is a data container.
 
 import threading
 from bittorrent_lite.types import (
-    TorrentMetadata, Bitfield, PeerInfo, ConnectionState,
+    TorrentMetadata, Bitfield, NeighborInfo,
     create_empty_bitfield, create_full_bitfield
 )
 
@@ -53,8 +53,8 @@ class PeerState:
         self.pieces: dict[int, bytes] = {}
 
         # Connected peers and their state
-        # peer_id -> ConnectionState (the 4 boolean flags)
-        self.connection_states: dict[str, ConnectionState] = {}
+        # peer_id -> NeighborInfo (connection identity and directional flags)
+        self.connection_states: dict[str, NeighborInfo] = {}
 
         # Known peer bitfields (what pieces each connected peer has)
         # peer_id -> Bitfield
@@ -65,8 +65,9 @@ class PeerState:
 
     def have_piece(self, piece_index: int) -> bool:
         """Check if I own a specific piece."""
+        self.metadata.expected_piece_size(piece_index)
         with self.lock:
-            return self.bitfield[piece_index]
+            return bool(self.bitfield[piece_index])
 
     def add_piece(self, piece_index: int, data: bytes) -> None:
         """
@@ -76,25 +77,32 @@ class PeerState:
             piece_index: Index of the piece.
             data: Verified piece data.
         """
+        self.metadata.expected_piece_size(piece_index)
         with self.lock:
-            self.bitfield[piece_index] = True
+            self.bitfield[piece_index] = 1
             self.pieces[piece_index] = data
 
     def get_piece(self, piece_index: int) -> bytes | None:
         """Get piece data by index, or None if not owned."""
+        self.metadata.expected_piece_size(piece_index)
         with self.lock:
             return self.pieces.get(piece_index)
 
     def set_peer_bitfield(self, peer_id: str, bitfield: Bitfield) -> None:
         """Store a remote peer's bitfield (received via BITFIELD message)."""
+        if (len(bitfield) != self.metadata.num_pieces
+                or any(type(bit) not in (int, bool) or bit not in (0, 1)
+                       for bit in bitfield)):
+            raise ValueError("invalid remote bitfield")
         with self.lock:
-            self.peer_bitfields[peer_id] = bitfield
+            self.peer_bitfields[peer_id] = list(bitfield)
 
     def update_peer_has_piece(self, peer_id: str, piece_index: int) -> None:
         """Update: remote peer now has this piece (received via HAVE message)."""
+        self.metadata.expected_piece_size(piece_index)
         with self.lock:
             if peer_id in self.peer_bitfields:
-                self.peer_bitfields[peer_id][piece_index] = True
+                self.peer_bitfields[peer_id][piece_index] = 1
 
     def remove_peer(self, peer_id: str) -> None:
         """Clean up state when a peer disconnects."""

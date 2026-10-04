@@ -8,6 +8,7 @@
 ## AI Tool Used
 
 - **Tool:** Google Antigravity (Claude-based coding assistant)
+- **Additional tool:** OpenAI Codex (repository review, picker assistance and regression fixes)
 - **Period:** September–October 2026
 
 ---
@@ -34,7 +35,6 @@
 |---|---|
 | **Core Protocol Implementation** | All peer wire protocol code (handshake, bitfield, HAVE, REQUEST, PIECE, CANCEL) was written by team members |
 | **Tracker Implementation** | The tracker server and state management were implemented by team members |
-| **Rarest-First Algorithm** | The piece selection algorithm was implemented by team members |
 | **Choking/Unchoking** | The choking strategy was implemented by team members |
 | **Peer State Machine** | The peer connection state machine was implemented by team members |
 | **Message Framing** | TCP framing (partial reads, length-prefixed messages) was implemented by team members |
@@ -48,6 +48,8 @@
 | Date | Member | What AI Helped With | Category |
 |---|---|---|---|
 | 2026-09-15 | All | Architecture design, module interfaces, project scaffolding | Design & Boilerplate |
+| 2026-10-04 | Prabhat | OpenAI Codex audited progress, assisted the initial neighborhood availability and rarest-first picker implementation, wrote contract/import tests, repaired stale shared-type imports and an unused missing-constant import, and documented remaining work. This includes AI assistance with core selection code; Prabhat must review, understand and check course rules before submission. | Implementation Assistance, Testing, Integration Review & Documentation |
+| 2026-10-04 | Prabhat | At the user's request for extensive repository testing, Codex reproduced and fixed validation, stale piece-state, source verification, output preservation and peer-state defects; wired the existing metadata CLI to implemented functions; added boundary, fault-injection, randomized and concurrent tests; corrected README status. | Debugging, Regression Testing & Documentation |
 | | | | |
 
 ---
@@ -55,7 +57,7 @@
 ## Team Declaration
 
 We confirm that:
-1. All core protocol implementation was written by team members.
+1. The initial piece-picker implementation received OpenAI Codex assistance on 4 October 2026, as recorded above. The team must review authorship and permitted AI use before submission; the earlier all-team-written claim does not apply to this selection code.
 2. AI was used only for permitted purposes as described above.
 3. Every team member understands the complete system and can explain/modify any part.
 

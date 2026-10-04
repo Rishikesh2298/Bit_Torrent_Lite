@@ -1,4 +1,5 @@
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 from bittorrent_lite.types import TorrentMetadata
 from bittorrent_lite.config import DEFAULT_PIECES_DIR
@@ -60,15 +61,20 @@ class FileStore:
                 )
 
             if len(data) != self.metadata.expected_piece_size(index):
+                self._bitfield[index] = 0
                 raise FileNotFoundError(
                     f"piece {index} is not available"
                 )
 
+            if not verify_piece(data, self.metadata.piece_hashes[index]):
+                self._bitfield[index] = 0
+                raise ValueError(f"piece {index} failed hash verification")
             return data
 
         piece_path = self._piece_path(index)
 
         if not piece_path.exists():
+            self._bitfield[index] = 0
             raise FileNotFoundError(
                 f"piece {index} is not available"
             )
@@ -76,10 +82,9 @@ class FileStore:
         with open(piece_path, "rb") as file:
             data = file.read()
 
-        if not verify_piece(
-            data,
-            self.metadata.piece_hashes[index]
-        ):
+        if (len(data) != self.metadata.expected_piece_size(index)
+                or not verify_piece(data, self.metadata.piece_hashes[index])):
+            self._bitfield[index] = 0
             raise ValueError(
                 f"piece {index} failed hash verification"
             )
@@ -114,8 +119,15 @@ class FileStore:
 
         piece_path = self._piece_path(index)
 
-        with open(piece_path, "wb") as file:
-            file.write(data)
+        temporary = None
+        try:
+            with NamedTemporaryFile(dir=self.pieces_dir, suffix=".tmp", delete=False) as file:
+                temporary = Path(file.name)
+                file.write(data)
+            temporary.replace(piece_path)
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
 
         self._bitfield[index] = 1
 
@@ -125,29 +137,12 @@ class FileStore:
 
         self._validate_index(index)
 
-        if self._bitfield[index] == 1:
-            return True
-
-        if self.source_path is not None:
+        if self.source_path is not None and not self._bitfield[index]:
             return False
-
-        piece_path = self._piece_path(index)
-
-        if not piece_path.exists():
-            return False
-
-        with open(piece_path, "rb") as file:
-            data = file.read()
-
-        expected_size = self.metadata.expected_piece_size(index)
-
-        if len(data) != expected_size:
-            return False
-
-        if not verify_piece(
-            data,
-            self.metadata.piece_hashes[index]
-        ):
+        try:
+            self.read_piece(index)
+        except (FileNotFoundError, ValueError):
+            self._bitfield[index] = 0
             return False
 
         self._bitfield[index] = 1
@@ -169,23 +164,28 @@ class FileStore:
                 return False
 
         output = Path(output_path)
+        if any(output.resolve() == self._piece_path(index).resolve()
+               for index in range(self.metadata.num_pieces)):
+            raise ValueError("output must not overwrite a stored piece")
 
-        with open(output, "wb") as file:
-
-            for index in range(self.metadata.num_pieces):
-
-                data = self.read_piece(index)
-
-                file.write(data)
-
-        actual_hash = hash_file(str(output))
-
-        if actual_hash != self.metadata.file_sha256:
-            return False
-
-        return True
+        temporary = None
+        try:
+            with NamedTemporaryFile(dir=output.parent, suffix=".tmp", delete=False) as file:
+                temporary = Path(file.name)
+                for index in range(self.metadata.num_pieces):
+                    file.write(self.read_piece(index))
+            if (temporary.stat().st_size != self.metadata.file_size
+                    or hash_file(str(temporary)) != self.metadata.file_sha256):
+                return False
+            temporary.replace(output)
+            return True
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
 
     def validate_source(self) -> None:
+
+        self._bitfield = [0] * self.metadata.num_pieces
 
         if self.source_path is None:
             raise ValueError(
@@ -212,17 +212,6 @@ class FileStore:
             )
 
         for index in range(self.metadata.num_pieces):
+            self.read_piece(index)
 
-            data = self.read_piece(index)
-
-            expected_hash = self.metadata.piece_hashes[index]
-
-            if not verify_piece(
-                data,
-                expected_hash
-            ):
-                raise ValueError(
-                    f"source piece {index} failed hash verification"
-                )
-
-            self._bitfield[index] = 1
+        self._bitfield = [1] * self.metadata.num_pieces
