@@ -102,6 +102,11 @@ See [docs/protocol_spec.md](docs/protocol_spec.md) for the full protocol specifi
 
 ## Tests
 
+Prabhat's Part 1 scheduler is integrated under `bittorrent_lite.scheduler`.
+Run `python -m examples.scheduler_demo` for the single-request example.
+See [scheduler integration](docs/scheduler.md) for protocol/storage adapters,
+interfaces, limitations, and test coverage. The peer CLI is still a stub.
+
 Run `python -m pytest` from the repository root after installing dependencies.
 Tests cover the implemented file manager, metadata CLI, message objects,
 peer-state container, piece picker and package imports. Legacy placeholder

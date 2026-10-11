@@ -1,5 +1,19 @@
 # Prabhat: initial scheduler review and test contracts
 
+## Update — 11 October 2026
+
+The submitted `prabhat_scheduler.zip` has been integrated as
+`bittorrent_lite.scheduler`, with a project FileStore adapter, protocol-event
+bridge, and runnable example. Request tracking and the basic coordinator are
+now implemented. Integration fixed interest gating, malformed input handling,
+verification-time reservation expiry, timeout configuration validation, and
+the distinction between piece ownership and final assembly.
+
+See [scheduler.md](scheduler.md) for the current interfaces and limitations.
+The original review below is historical: its statement that request handling
+is entirely unfinished no longer describes the integrated Part 1 package.
+Real networking/peer-loop integration, retry policy and uploads remain open.
+
 Reviewed on 4 October 2026 against main commit `2c290fb` and the six supplied
 planning documents. This is a code audit, not evidence of a working swarm.
 
