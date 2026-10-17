@@ -22,7 +22,7 @@ A simplified peer-to-peer file distribution system inspired by BitTorrent, built
 - [x] File splitting into fixed-size pieces
 - [x] SHA-256 per-piece hash verification
 - [x] JSON metadata format (.torrent.json)
-- [ ] HTTP-based tracker for peer discovery
+- [x] HTTP-based tracker for peer discovery (tracker + discovery worker tested; not yet wired into peer_main)
 - [ ] Peer wire protocol over TCP
 - [ ] Handshake with file_id verification
 - [ ] Bitfield exchange
@@ -68,8 +68,8 @@ python -m bittorrent_lite.scripts.generate_metadata --file path/to/file --output
 
 ### 2. Start Tracker
 
-Steps 2–4 describe the planned interface. The tracker, transport and peer loop
-are currently stubs; end-to-end network transfers are not operational yet.
+The tracker works. Steps 3–4 describe the planned peer interface; the peer
+loop is still a stub, so end-to-end network transfers are not operational yet.
 
 ```bash
 python -m bittorrent_lite.tracker.tracker_server --port 8000
@@ -111,7 +111,9 @@ tests remain skipped; a passing suite does not establish a working swarm.
 
 ## Experiments
 
-<!-- TODO: Add experiment descriptions and results -->
+Harness, measurement definitions and commands: [docs/experiment-method.md](docs/experiment-method.md).
+Events peers must log for measurements: [docs/log-events.md](docs/log-events.md).
+Tracker contract: [docs/tracker.md](docs/tracker.md).
 
 1. **Distribution time vs swarm size** (2, 4, 6, 8 peers)
 2. **Piece selection strategy** (sequential vs random vs rarest-first)
