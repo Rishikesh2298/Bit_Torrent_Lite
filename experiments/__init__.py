@@ -1,13 +1,12 @@
 """
-Experiment Runner Placeholder
+Experiment harness (Debargha).
 
-All experiment scripts will be added here during Week 6.
+    make_fixture.py   deterministic test file + metadata
+    launcher.py       run one swarm from a JSON config, write manifest
+    matrix.py         the 9-configuration matrix with repeats
+    collect.py        run folders -> runs.csv / peers.csv / availability.csv
+    plot.py           CSVs -> figures + summary.csv
+    stand_in_peer.py  synthetic peer for testing the harness only
 
-Planned experiments:
-    1. exp_swarm_size.py      — Distribution time vs swarm size (2, 4, 6, 8 peers)
-    2. exp_piece_strategy.py  — Sequential vs random vs rarest-first
-    3. exp_seeder_count.py    — 1 seeder vs 2 seeders
-    4. exp_free_rider.py      — Free-rider behavior under choking
-    5. exp_peer_failure.py    — Peer disconnect mid-transfer
-    6. plot_results.py        — Plotting and analysis
+See docs/experiment-method.md.
 """
