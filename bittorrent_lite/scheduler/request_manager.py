@@ -1,3 +1,8 @@
+"""Legacy Part 1 API; Coordinator uses request_pipeline.PipelineManager.
+
+Retained for existing direct callers. New lifecycle integrations should use
+PipelineManager, which owns permissions, connections and verified ownership.
+"""
 import itertools
 import math
 from typing import Optional

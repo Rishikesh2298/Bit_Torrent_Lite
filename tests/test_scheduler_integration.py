@@ -19,7 +19,7 @@ def setup_scheduler(n=3, transport=None):
     clock = ManualClock()
     transport = transport or RecordingTransport()
     store = InMemoryStore(hashes, 8)
-    c = Coordinator(n, transport, store, clock, rng=random.Random(1))
+    c = Coordinator(n, transport, store, clock, SchedulerConfig(request_window=1), rng=random.Random(1))
     c.handle_event(e.ConnectionReady(1, "one"))
     c.handle_event(e.BitfieldReceived(1, [True] * n))
     c.handle_event(e.UnchokeReceived(1))
@@ -178,7 +178,7 @@ def test_config_validation(kwargs):
 
 def test_request_manager_exact_identity_and_cleanup():
     clock = ManualClock()
-    rm = RequestManager(clock, SchedulerConfig())
+    rm = RequestManager(clock, SchedulerConfig(request_window=1))
     r = rm.reserve(1, 0)
     assert rm.reserve(2, 0) is None
     assert rm.reserve(1, 1) is None
@@ -227,7 +227,8 @@ def test_protocol_bridge_download_to_real_disk_and_assemble(tmp_path):
     clock = ManualClock()
     bridge = SchedulerBridge(clock)
     outgoing = []
-    c = Coordinator(len(pieces), bridge, FileStoreAdapter(store), clock)
+    c = Coordinator(len(pieces), bridge, FileStoreAdapter(store), clock,
+                    SchedulerConfig(request_window=1))
     bridge.register(1, "source", outgoing.append)
     bits = [1] * len(pieces)
     bridge.received(1, m.BitfieldMsg(bits))

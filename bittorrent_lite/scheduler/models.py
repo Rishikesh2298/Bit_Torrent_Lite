@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-import math
 from bittorrent_lite.types import PieceState
 from bittorrent_lite.config import REQUEST_TIMEOUT, QUEUE_SEND_TIMEOUT
+from bittorrent_lite.config import MAX_OUTSTANDING_REQUESTS, MAX_CONNECTIONS
+from request_pipeline import PipelineConfig
 from typing import Optional
 
 
@@ -30,13 +31,16 @@ class PendingRequest:
 
 @dataclass(frozen=True)
 class SchedulerConfig:
-    request_window: int = 1
+    request_window: int = MAX_OUTSTANDING_REQUESTS
     response_timeout: float = REQUEST_TIMEOUT
     send_confirm_timeout: float = QUEUE_SEND_TIMEOUT
+    max_connections: int = MAX_CONNECTIONS
 
     def __post_init__(self):
-        if type(self.request_window) is not int or self.request_window < 1:
-            raise ValueError("request_window must be a positive integer")
-        for value in (self.response_timeout, self.send_confirm_timeout):
-            if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
-                raise ValueError("timeouts must be positive finite numbers")
+        self.pipeline_config()
+
+    def pipeline_config(self):
+        return PipelineConfig(window=self.request_window,
+                              response_timeout=self.response_timeout,
+                              send_confirm_timeout=self.send_confirm_timeout,
+                              max_connections=self.max_connections)

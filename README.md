@@ -27,7 +27,7 @@ A simplified peer-to-peer file distribution system inspired by BitTorrent, built
 - [ ] Handshake with file_id verification
 - [ ] Bitfield exchange
 - [x] Rarest-first piece selection (standalone picker tested)
-- [ ] Request pipelining
+- [x] Request pipelining (four-slot scheduler; transport wiring still pending)
 - [ ] Concurrent multi-peer transfers (6+ peers)
 - [ ] Peer failure handling
 - [x] File reconstruction and verification
@@ -103,6 +103,9 @@ See [docs/protocol_spec.md](docs/protocol_spec.md) for the full protocol specifi
 ## Tests
 
 Prabhat's Part 1 scheduler is integrated under `bittorrent_lite.scheduler`.
+Part 2's standalone `request_pipeline` package now owns its request lifecycle,
+with four requests per connection by default and fair rarest-first allocation.
+See [Part 2 integration](docs/request-pipeline.md) for behavior and validation.
 Run `python -m examples.scheduler_demo` for the single-request example.
 See [scheduler integration](docs/scheduler.md) for protocol/storage adapters,
 interfaces, limitations, and test coverage. The peer CLI is still a stub.

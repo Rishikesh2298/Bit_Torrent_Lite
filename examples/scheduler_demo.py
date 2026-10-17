@@ -31,7 +31,7 @@ def main():
     transport = RecordingTransport()
     store = InMemoryStore(hashes, PIECE_SIZE)
     sched = Coordinator(
-        NUM_PIECES, transport, store, clock, SchedulerConfig(), rng=random.Random(7)
+        NUM_PIECES, transport, store, clock, SchedulerConfig(request_window=1), rng=random.Random(7)
     )
 
     sched.handle_event(ConnectionReady(connection_id=1, peer_id="peer-A"))

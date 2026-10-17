@@ -1,3 +1,10 @@
+# Current integration status
+
+Part 2 now backs the coordinator with `request_pipeline.PipelineManager`.
+The default window is four; the one-request example opts into window one.
+See [Part 2 integration](request-pipeline.md) for current behavior, limits and
+verification. Part 1 history and interface background follow below.
+
 # Integrated Prabhat scheduler (Part 1)
 
 Imported from the user-supplied `prabhat_scheduler.zip` on 11 October 2026.
@@ -5,7 +12,7 @@ The core now lives in `bittorrent_lite.scheduler`. The original archive is
 preserved outside the repository. Integration fixes and tests are recorded in
 `AI-USE.md`; the archive is the reference for the submitted implementation.
 
-Standalone piece selection, request tracking and a basic scheduler with one outstanding request per connection. Python 3.10+, standard library only. No sockets, no tracker, no upload policy.
+Standalone piece selection and request tracking. Part 1 used one outstanding request per connection; Part 2 defaults to four. Python 3.10+, standard library only. No sockets, no tracker, no upload policy.
 
 ## Run the example
 
@@ -22,7 +29,7 @@ It registers one fake neighbor, sends bitfield and unchoke, enqueues a request, 
 | `scheduler/models.py` | `PieceState`, `NeighborState`, `PendingRequest`, `SchedulerConfig` |
 | `scheduler/interfaces.py` | `Transport`, `PieceStore`, `Clock` protocols |
 | `scheduler/piece_picker.py` | `PiecePicker`, rarest-first with random tie break |
-| `scheduler/request_manager.py` | `RequestManager`, reservations and deadlines |
+| `scheduler/request_manager.py` | Legacy Part 1 `RequestManager`, retained for direct callers |
 | `scheduler/events.py` | event dataclasses and the `ExpiredRequest` tick outcome |
 | `scheduler/coordinator.py` | `Coordinator`, the only object the network layer talks to |
 | `examples/` | fake transport, in-memory store, manual clock, demo |
@@ -43,7 +50,7 @@ Coordinator: `handle_event(event)`, `schedule()`, `tick()`, `snapshot()`, plus `
 
 PiecePicker: `update_bitfield`, `record_have`, `remove_connection`, `pick_piece`, `availability_snapshot`.
 
-RequestManager: `reserve`, `mark_sent`, `complete`, `cancel`, `cancel_connection`, `get_expired`, `get_unsent_expired`, `reserved_pieces`, `outstanding_count`, `can_request`. Extras: `get`, `mark_verifying`, `all_pending`.
+Legacy RequestManager (not used by Coordinator): `reserve`, `mark_sent`, `complete`, `cancel`, `cancel_connection`, `get_expired`, `get_unsent_expired`, `reserved_pieces`, `outstanding_count`, `can_request`. Extras: `get`, `mark_verifying`, `all_pending`.
 `reserve` returns `None` when the piece is already reserved or the connection slot is full.
 
 ## Event fields
@@ -69,11 +76,11 @@ A request is identified by connection_id + request_id + piece_index. Request ids
 |---|---|
 | Per-piece state (`MISSING/REQUESTED/VERIFYING/HAVE`), local bitfield, neighbor flags | `Coordinator` |
 | Per-connection bitfield copies and availability counts | `PiecePicker` |
-| Pending requests, piece reservations, per-connection outstanding counts, deadlines | `RequestManager` |
+| Pending requests, piece reservations, per-connection outstanding counts, deadlines | `PipelineManager` |
 | Verified data on disk | the team's piece store |
 | Queued outgoing messages and sockets | the team's networking layer |
 
-A request stays in the `RequestManager` while its piece is being verified, so the piece stays reserved and the slot stays occupied until the store answers.
+A request stays in the `PipelineManager` while its piece is being verified, so the piece stays reserved and the slot stays occupied until the store answers.
 
 ## Behaviour worth knowing
 
@@ -90,7 +97,7 @@ A request stays in the `RequestManager` while its piece is being verified, so th
 - `snapshot()["ready_to_assemble"]` means all pieces are verified and owned.
   It does not claim final assembly has succeeded; the misleading `complete`
   field from the standalone version has been removed.
-- `tick()` releases expired requests and returns them. The piece is eligible again on the next `schedule()` with no backoff, which is the Part 2 retry policy.
+- `tick()` releases expired requests and returns them. The piece is eligible again on the next `schedule()` with no backoff; recovery policy remains separate work.
 
 ## Hooking up the team's code
 
@@ -108,9 +115,9 @@ The team's `Transport` implementation must queue messages and return `True`/`Fal
 
 The team's storage must provide `verified_bitfield()` (only verified pieces, one bool per piece) and `verify_and_store(index, data)` (check size and hash, write, return `True`; return `False` for bad data; raise `OSError` for disk problems). The `Clock` must be monotonic.
 
-## Deferred to Part 2
+## Remaining integration and policy work
 
-Real sockets, tracker discovery, upload/choking policy, four-request pipelining (raise `request_window`), retry and backoff, provider reassignment, endgame mode. Part 3 covers the formal tests and experiments.
+Real sockets, tracker discovery, upload/choking policy, retry and backoff, provider reassignment, and endgame mode remain outside this scheduler integration.
 
 ## Project adapter usage
 
@@ -129,6 +136,7 @@ bridge.register(1, remote_peer_id, connection.send)
 # Owner thread, periodically:
 bridge.drain(scheduler)
 expired = scheduler.tick()
+scheduler.schedule()
 ```
 
 Register connections and run the coordinator only on its owner thread. Worker
@@ -144,12 +152,12 @@ and rechecks cached pieces before publishing initial ownership. Construct it
 before other threads begin writing the store. Disk verification is synchronous
 in this baseline. Final assembly is the caller's responsibility.
 
-The default request window stays one; response and send-confirmation timeouts
+The default request window is now four (use SchedulerConfig(request_window=1) for the baseline); response and send-confirmation timeouts
 come from project config (10 and 5 seconds). `tick()` releases expired requests
 but does not schedule replacements. Other handled events trigger scheduling;
 rejected/corrupt pieces can therefore be immediately selected again. Backoff,
-provider penalties, queued-request cancellation, and bounded upload work remain
-Part 2 work. The bridge's inbound event queue is currently unbounded.
+provider penalties, transport-queue cancellation, and bounded upload work remain
+future work. The bridge's inbound event queue is currently unbounded.
 
 ## Verification
 

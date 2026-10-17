@@ -61,6 +61,17 @@ class PiecePicker:
     def availability_snapshot(self) -> list[int]:
         return list(self._counts)
 
+    def candidate_order(self, local_bitfield, source_bitfield) -> list[int]:
+        """Rarest first, with randomized ties, for the pipeline's fair fill."""
+        self.validate_bitfield(local_bitfield)
+        self.validate_bitfield(source_bitfield)
+        candidates = [i for i in range(self._n)
+                      if source_bitfield[i] and not local_bitfield[i]
+                      and self._counts[i] > 0]
+        self._rng.shuffle(candidates)
+        candidates.sort(key=self._counts.__getitem__)
+        return candidates
+
     def validate_bitfield(self, bitfield: Sequence[bool]) -> None:
         if len(bitfield) != self._n or any(
             type(b) not in (bool, int) or b not in (0, 1) for b in bitfield
