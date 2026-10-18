@@ -39,6 +39,12 @@ class RecordingTransport:
         out, self.log = self.log, []
         return out
 
+    def send_cancel(self, connection_id, request_id, piece_index):
+        if self.refuse:
+            return False
+        self.log.append(("CANCEL", connection_id, request_id, piece_index))
+        return True
+
 
 class InMemoryStore:
     def __init__(self, piece_hashes: list[bytes], piece_size: int):

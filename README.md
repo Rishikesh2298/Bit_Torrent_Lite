@@ -106,6 +106,9 @@ Prabhat's Part 1 scheduler is integrated under `bittorrent_lite.scheduler`.
 Part 2's standalone `request_pipeline` package now owns its request lifecycle,
 with four requests per connection by default and fair rarest-first allocation.
 See [Part 2 integration](docs/request-pipeline.md) for behavior and validation.
+Part 3's `recovery_policy` now supplies retry backoff, provider exclusions,
+selection strategies and bounded endgame duplicates with CANCEL messages.
+See [recovery integration](docs/recovery-policy.md) for configuration and limits.
 Run `python -m examples.scheduler_demo` for the single-request example.
 See [scheduler integration](docs/scheduler.md) for protocol/storage adapters,
 interfaces, limitations, and test coverage. The peer CLI is still a stub.

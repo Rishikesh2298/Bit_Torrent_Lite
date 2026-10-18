@@ -160,23 +160,32 @@ def test_four_slot_bridge_out_of_order_corrupt_retry_and_disk_assembly(tmp_path)
     bridge.received(1, m.Unchoke())
     bridge.drain(c)
     assert len(c.snapshot()["pending"]) == 4
+    # Recovery excludes corrupt providers for the affected piece. Supply a
+    # second independent source for that piece instead of retrying corruption.
+    backup = []
+    bridge.register(2, "backup", backup.append)
+    bridge.received(2, m.BitfieldMsg([True] * len(pieces)))
+    bridge.received(2, m.Unchoke())
+    bridge.drain(c)
     corrupted = False
     for _ in range(20):
-        batch = [msg for msg in outgoing if isinstance(msg, m.Request)]
+        batch = [(1, msg) for msg in outgoing if isinstance(msg, m.Request)]
+        batch += [(2, msg) for msg in backup if isinstance(msg, m.Request)]
         outgoing.clear()
+        backup.clear()
         if c.snapshot()["ready_to_assemble"]:
             break
         assert batch, "download stalled"
-        assert len(c.snapshot()["pending"]) <= 4
-        for req in reversed(batch):
-            bridge.sent(1, req)
+        assert all(n["outstanding"] <= 4 for n in c.snapshot()["neighbors"].values())
+        for cid, req in reversed(batch):
+            bridge.sent(cid, req)
             payload = pieces[req.piece_index]
             if not corrupted:
                 payload = b"corrupt"
                 corrupted = True
-            bridge.received(1, m.Piece(req.request_id, req.piece_index, payload))
+            bridge.received(cid, m.Piece(req.request_id, req.piece_index, payload))
             # Duplicate responses must not create ownership or release other slots.
-            bridge.received(1, m.Piece(req.request_id, req.piece_index, payload))
+            bridge.received(cid, m.Piece(req.request_id, req.piece_index, payload))
         bridge.drain(c)
     assert c.snapshot()["ready_to_assemble"]
     assert not c.snapshot()["pending"]

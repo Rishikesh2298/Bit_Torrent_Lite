@@ -1,5 +1,9 @@
 # Part 2 request-pipeline integration
 
+Part 3 now adds recovery policy and endgame cancellation to the coordinator.
+See [recovery integration](recovery-policy.md) for the current behavior; the
+Part 2 implementation and verification history below describe its baseline.
+
 The independently supplied `request_pipeline.zip` is integrated as the top-level
 `request_pipeline` package. Its standard-library API and JSON CLI remain usable
 independently. The original archive is unchanged. The only change inside the

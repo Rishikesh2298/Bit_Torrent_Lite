@@ -9,6 +9,8 @@ class Transport(Protocol):
 
     def send_have(self, connection_id: int, piece_index: int) -> bool: ...
 
+    def send_cancel(self, connection_id: int, request_id: int, piece_index: int) -> bool: ...
+
 
 class PieceStore(Protocol):
     # bitfield must only describe pieces that are verified and stored

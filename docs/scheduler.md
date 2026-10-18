@@ -1,9 +1,12 @@
 # Current integration status
 
-Part 2 now backs the coordinator with `request_pipeline.PipelineManager`.
+Parts 2 and 3 back the coordinator with `request_pipeline.PipelineManager`
+and `recovery_policy.RecoveryPolicy`.
 The default window is four; the one-request example opts into window one.
 See [Part 2 integration](request-pipeline.md) for current behavior, limits and
-verification. Part 1 history and interface background follow below.
+verification, and [recovery integration](recovery-policy.md) for retry delays,
+exclusions, selection strategies and endgame cancellation. Part 1 history and
+interface background follow below.
 
 # Integrated Prabhat scheduler (Part 1)
 
@@ -97,7 +100,9 @@ A request stays in the `PipelineManager` while its piece is being verified, so t
 - `snapshot()["ready_to_assemble"]` means all pieces are verified and owned.
   It does not claim final assembly has succeeded; the misleading `complete`
   field from the standalone version has been removed.
-- `tick()` releases expired requests and returns them. The piece is eligible again on the next `schedule()` with no backoff; recovery policy remains separate work.
+- `tick()` releases expired requests, records provider-specific recovery penalties,
+  attempts CANCEL, and returns them. The owner calls `schedule()` to refill;
+  cooldowns and exclusions now gate retries.
 
 ## Hooking up the team's code
 
@@ -117,7 +122,9 @@ The team's storage must provide `verified_bitfield()` (only verified pieces, one
 
 ## Remaining integration and policy work
 
-Real sockets, tracker discovery, upload/choking policy, retry and backoff, provider reassignment, and endgame mode remain outside this scheduler integration.
+Real sockets, tracker discovery, upload/choking policy and transport-side queue
+cancellation remain outside this scheduler integration. Retry backoff,
+provider reassignment and endgame decisions are now integrated in Part 3.
 
 ## Project adapter usage
 
@@ -155,9 +162,10 @@ in this baseline. Final assembly is the caller's responsibility.
 The default request window is now four (use SchedulerConfig(request_window=1) for the baseline); response and send-confirmation timeouts
 come from project config (10 and 5 seconds). `tick()` releases expired requests
 but does not schedule replacements. Other handled events trigger scheduling;
-rejected/corrupt pieces can therefore be immediately selected again. Backoff,
-provider penalties, transport-queue cancellation, and bounded upload work remain
-future work. The bridge's inbound event queue is currently unbounded.
+rejected pieces now wait for recovery cooldowns for that provider, and corrupt
+providers are excluded for the affected piece until success. Other providers
+may supply the piece immediately. Transport-queue cancellation and bounded
+upload work remain future work. The bridge's inbound event queue is unbounded.
 
 ## Verification
 

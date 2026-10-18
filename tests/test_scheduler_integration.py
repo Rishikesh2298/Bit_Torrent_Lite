@@ -115,12 +115,21 @@ def test_choke_disconnect_and_reconnect_identity():
 
 @pytest.mark.parametrize("kind", ["reject", "send_failure", "corrupt"])
 def test_failed_request_released_and_stale_response_ignored(kind):
-    c, _, _, _, pieces = setup_scheduler(1)
+    c, clock, _, _, pieces = setup_scheduler(1)
     r = pending(c)
     event = {"reject": e.RejectReceived(1, r["request_id"], 0),
              "send_failure": e.RequestSendFailed(1, r["request_id"], 0),
              "corrupt": response(r, b"bad")}[kind]
     c.handle_event(event)
+    assert not c.snapshot()["pending"]
+    if kind == "corrupt":
+        # A corrupt provider stays excluded for this piece; another can supply it.
+        c.handle_event(e.ConnectionReady(2, "two"))
+        c.handle_event(e.BitfieldReceived(2, [True]))
+        c.handle_event(e.UnchokeReceived(2))
+    else:
+        clock.advance(2 if kind == "reject" else 1)
+        c.schedule()
     new = pending(c)
     assert new["request_id"] > r["request_id"]
     c.handle_event(response(r, pieces[0]))

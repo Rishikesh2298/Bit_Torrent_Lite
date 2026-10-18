@@ -20,6 +20,14 @@ lifecycle, fault, randomized accounting, and storage/bridge integration tests.
 The source ZIP was preserved unchanged. This work did not merge other branches
 or implement the peer network loop.
 
+## Part 3
+
+Prabhat supplied the independently developed `recovery_policy_part3.zip`.
+Its standalone library and CLI are preserved under `recovery_policy`.
+An OpenAI assistant integrated policy decisions with scheduler lifecycle events,
+added cancellation dispatch and capacity-failure handling, and wrote policy,
+recovery and disk/bridge regression tests. The original archive is unchanged.
+
 ## Earlier project assistance
 
 - **15 September 2026 — Google Antigravity:** Architecture, interfaces, and scaffolding.

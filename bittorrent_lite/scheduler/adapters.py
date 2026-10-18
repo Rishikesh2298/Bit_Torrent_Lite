@@ -66,6 +66,9 @@ class SchedulerBridge:
     def send_have(self, connection_id, piece_index):
         return self._send(connection_id, msg.Have(piece_index))
 
+    def send_cancel(self, connection_id, request_id, piece_index):
+        return self._send(connection_id, msg.Cancel(request_id, piece_index))
+
     def received(self, connection_id, message):
         """Called by a receiver callback; copy mutable payloads before queueing."""
         if isinstance(message, msg.BitfieldMsg):
