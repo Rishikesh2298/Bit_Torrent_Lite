@@ -1,113 +1,114 @@
 """
 Tracker State — Debargha's Module
 
-In-memory data structure that stores the swarm's state.
-The tracker_server.py handles HTTP; this module handles the data.
-
-Interface:
-    TrackerState.register_peer(peer_id, ip, port) -> None
-    TrackerState.update_peer(peer_id, bitfield) -> None
-    TrackerState.get_peer_list(exclude_peer_id) -> list[PeerInfo]
-    TrackerState.remove_stale_peers(timeout_seconds) -> list[str]
-    TrackerState.remove_peer(peer_id) -> None
+In-memory swarm membership. tracker_server.py handles HTTP; this module
+holds the table and applies announce events. It does no I/O, so it can be
+tested with a fake clock.
 
 Data model:
-    Internally stores a dict:
-    {
-        "peer-001": {"ip": "127.0.0.1", "port": 9001, "last_seen": <timestamp>},
-        "peer-002": {"ip": "127.0.0.1", "port": 9002, "last_seen": <timestamp>},
-        ...
-    }
+    key   = (file_id, peer_id)
+    value = MemberRecord(ip, port, last_seen, completed)
 
-Thread safety:
-    Multiple peers may announce simultaneously (tracker handles concurrent HTTP).
-    ALL methods that read or modify the peer dict MUST be protected by a lock.
+Rules (docs/tracker.md):
+    started / update -> insert or refresh (an update after a tracker restart
+                        recreates the record)
+    completed        -> insert or refresh and mark completed
+    stopped          -> remove if present; repeating it is harmless
+    An entry whose age is at least the expiry time is removed before any
+    response is built. Expiry is a timeout heuristic, not proof of death.
 
-Stale peer cleanup:
-    A background thread should periodically call remove_stale_peers().
-    If a peer hasn't announced within TRACKER_PEER_TIMEOUT seconds, remove it.
+Concurrency:
+    The tracker uses a single-threaded HTTP server, so only one request
+    touches this table at a time and no lock is needed. If the server is ever
+    made threaded, add a lock around every method.
 """
 
-import threading
-from bittorrent_lite.types import PeerRecord as PeerInfo
+import time
+from dataclasses import dataclass
+
+from bittorrent_lite.config import TRACKER_PEER_TIMEOUT
+from bittorrent_lite.types import PeerRecord
+
+EVENTS = ("started", "update", "completed", "stopped")
+
+
+@dataclass
+class MemberRecord:
+    """One live peer in one swarm."""
+
+    ip: str
+    port: int
+    last_seen: float
+    completed: bool = False
 
 
 class TrackerState:
     """
-    Thread-safe in-memory storage for swarm membership.
+    Membership table for all swarms served by one tracker.
 
-    Attributes:
-        _peers: Dict mapping peer_id -> peer record dict.
-        _lock: Threading lock for safe concurrent access.
+    Args:
+        expiry_seconds: Age at which an entry is considered dead.
+        clock: Monotonic time source; tests pass a fake.
     """
 
-    def __init__(self):
-        """Initialize empty swarm state with a lock."""
-        self._peers: dict = {}
-        self._lock = threading.Lock()
+    def __init__(self, expiry_seconds: float = TRACKER_PEER_TIMEOUT,
+                 clock=time.monotonic):
+        self.expiry_seconds = expiry_seconds
+        self._clock = clock
+        self._members: dict[tuple[str, str], MemberRecord] = {}
 
-    def register_peer(self, peer_id: str, ip: str, port: int) -> None:
+    def announce(self, file_id: str, peer_id: str, ip: str, port: int,
+                 event: str) -> list[PeerRecord]:
         """
-        Register a new peer or update an existing peer's last_seen time.
+        Apply one validated announce and return the other live peers.
 
-        Args:
-            peer_id: Unique peer identifier.
-            ip: Peer's IP address.
-            port: Peer's listening port.
+        Inputs must already be validated by the server. The response for a
+        stopped peer is still computed (it is usually ignored).
         """
-        # TODO: Debargha — implement this
-        raise NotImplementedError
+        if event not in EVENTS:
+            raise ValueError(f"unknown event {event!r}")
 
-    def update_peer(self, peer_id: str) -> None:
-        """
-        Update a peer's last_seen timestamp (heartbeat).
+        now = self._clock()
+        self.expire(now)
+        key = (file_id, peer_id)
 
-        Args:
-            peer_id: Peer to update.
+        if event == "stopped":
+            self._members.pop(key, None)
+        else:
+            record = self._members.get(key)
+            completed = event == "completed" or (record is not None and record.completed)
+            # One peer ID has one current endpoint per file: replace the record.
+            self._members[key] = MemberRecord(ip, port, now, completed)
 
-        Raises:
-            KeyError: If peer_id is not registered.
-        """
-        # TODO: Debargha — implement this
-        raise NotImplementedError
+        return self.peers_for(file_id, exclude_peer_id=peer_id, now=now)
 
-    def get_peer_list(self, exclude_peer_id: str = "") -> list[PeerInfo]:
-        """
-        Get list of all active peers, optionally excluding one.
+    def expire(self, now: float | None = None) -> list[tuple[str, str]]:
+        """Remove entries whose age is at least the expiry time."""
+        if now is None:
+            now = self._clock()
+        expired = [key for key, record in self._members.items()
+                   if now - record.last_seen >= self.expiry_seconds]
+        for key in expired:
+            del self._members[key]
+        return expired
 
-        Args:
-            exclude_peer_id: Peer to exclude (typically the requesting peer).
+    def peers_for(self, file_id: str, exclude_peer_id: str = "",
+                  now: float | None = None) -> list[PeerRecord]:
+        """Live peers of one file, excluding the requester, sorted by peer ID."""
+        self.expire(now)
+        return [PeerRecord(peer_id=peer_id, ip=record.ip, port=record.port)
+                for (fid, peer_id), record in sorted(self._members.items())
+                if fid == file_id and peer_id != exclude_peer_id]
 
-        Returns:
-            List of PeerInfo for all other peers.
-        """
-        # TODO: Debargha — implement this
-        raise NotImplementedError
+    def get(self, file_id: str, peer_id: str) -> MemberRecord | None:
+        """Return a copy of one record, or None."""
+        record = self._members.get((file_id, peer_id))
+        if record is None:
+            return None
+        return MemberRecord(record.ip, record.port, record.last_seen, record.completed)
 
-    def remove_stale_peers(self, timeout_seconds: int) -> list[str]:
-        """
-        Remove peers that haven't announced within the timeout.
-
-        Args:
-            timeout_seconds: Max seconds since last_seen before removal.
-
-        Returns:
-            List of peer_ids that were removed.
-        """
-        # TODO: Debargha — implement this
-        raise NotImplementedError
-
-    def remove_peer(self, peer_id: str) -> None:
-        """
-        Explicitly remove a peer (e.g., when it announces departure).
-
-        Args:
-            peer_id: Peer to remove.
-        """
-        # TODO: Debargha — implement this
-        raise NotImplementedError
-
-    def peer_count(self) -> int:
-        """Return the number of currently registered peers."""
-        # TODO: Debargha — implement this
-        raise NotImplementedError
+    def peer_count(self, file_id: str | None = None) -> int:
+        """Number of stored entries, optionally for one file (expired ones included until next expire)."""
+        if file_id is None:
+            return len(self._members)
+        return sum(1 for fid, _ in self._members if fid == file_id)
