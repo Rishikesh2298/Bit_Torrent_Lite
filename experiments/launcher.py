@@ -381,6 +381,23 @@ class Run:
         # tracker), tracker last. Only processes this run started are touched.
         peers = [ch for ch in self.children if ch.role != "tracker"]
         trackers = [ch for ch in self.children if ch.role == "tracker"]
+
+        # Signal clean stop for peers (especially on Windows where terminate() is SIGKILL)
+        stop_file = self.dir / ".stop"
+        try:
+            stop_file.touch()
+        except OSError:
+            pass
+
+        deadline = time.monotonic() + STOP_GRACE_S
+        alive_peers = [ch for ch in peers if ch.process is not None and ch.process.poll() is None]
+        for child in alive_peers:
+            rem = max(0.05, deadline - time.monotonic())
+            try:
+                child.process.wait(timeout=min(1.5, rem))
+            except subprocess.TimeoutExpired:
+                pass
+
         for group in (peers, trackers):
             alive = [ch for ch in group if ch.process is not None and ch.process.poll() is None]
             for child in alive:

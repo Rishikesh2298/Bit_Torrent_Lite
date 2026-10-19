@@ -103,6 +103,11 @@ class Message:
 
         return cls()
 
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return False
+
 
 # ============================================================
 # Validation Helpers
@@ -200,7 +205,7 @@ class Handshake(Message):
 
     type = "HANDSHAKE"
 
-    protocol_version: str
+    protocol_version: str | int
     file_id: str
     peer_id: str
 
@@ -221,10 +226,12 @@ class Handshake(Message):
 
         _validate_no_payload(payload)
 
-        protocol_version = _require_string(
-            header,
-            "protocol_version"
-        )
+        pv = header.get("protocol_version")
+        if isinstance(pv, bool) or not isinstance(pv, (str, int)):
+            raise ValueError("'protocol_version' must be a string or integer")
+        if isinstance(pv, str) and not pv:
+            raise ValueError("'protocol_version' cannot be empty")
+        protocol_version = pv
 
         file_id = _require_string(
             header,

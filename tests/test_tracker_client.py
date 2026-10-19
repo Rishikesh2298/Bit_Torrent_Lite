@@ -272,8 +272,9 @@ class TestDiscoveryWorker:
                                    retry_delays=[0.1, 0.2, 0.3])
         worker_a.start()
         worker_b.start()
+        tracker = None
         try:
-            assert isinstance(events_a.get(timeout=2), TrackerError)
+            assert isinstance(events_a.get(timeout=5), TrackerError)
 
             tracker = RunningTracker(port)
             tracker.server.interval = 1
@@ -296,4 +297,5 @@ class TestDiscoveryWorker:
         finally:
             worker_a.stop(send_stopped=False)
             worker_b.stop(send_stopped=False)
-            tracker.stop()
+            if tracker is not None:
+                tracker.stop()

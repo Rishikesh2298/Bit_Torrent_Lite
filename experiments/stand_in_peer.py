@@ -84,8 +84,11 @@ def main(argv=None) -> int:
     uploaded = 0
     known_peers = 0
     done = args.seeder
+    stop_file = Path(args.output_dir).parent.parent / ".stop"
 
     while not _stop:
+        if stop_file.exists():
+            break
         if args.exit_after_s is not None and time.monotonic() - started >= args.exit_after_s:
             return 3
         try:
@@ -95,6 +98,7 @@ def main(argv=None) -> int:
         except queue.Empty:
             pass
         if done or known_peers == 0:
+            time.sleep(0.02)
             continue
         now = time.monotonic()
         while pieces < total and now >= next_piece_at:
