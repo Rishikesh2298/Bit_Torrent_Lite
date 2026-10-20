@@ -1,5 +1,14 @@
 # Current integration status
 
+The September original plan now controls project defaults and integrated behavior.
+See [alignment and transport handoff](original-plan-alignment.md). Historical
+Part 1 descriptions below do not override that current contract.
+
+Combined Part 4 connects uploads and choking policy through
+`SchedulerBridge.create_coordinator(store)`. See [uploads and choking](upload-and-choking.md)
+for the complete factory, acknowledgement and shutdown contracts. Direct
+Coordinator construction remains download-only unless `uploads=` is supplied.
+
 Parts 2 and 3 back the coordinator with `request_pipeline.PipelineManager`
 and `recovery_policy.RecoveryPolicy`.
 The default window is four; the one-request example opts into window one.
@@ -122,8 +131,9 @@ The team's storage must provide `verified_bitfield()` (only verified pieces, one
 
 ## Remaining integration and policy work
 
-Real sockets, tracker discovery, upload/choking policy and transport-side queue
-cancellation remain outside this scheduler integration. Retry backoff,
+Real sockets, tracker discovery and transport-side queue cancellation remain
+outside this scheduler integration. Combined Part 4 now supplies upload/choking
+policy through the optional upload controller. Retry backoff,
 provider reassignment and endgame decisions are now integrated in Part 3.
 
 ## Project adapter usage
@@ -164,8 +174,8 @@ come from project config (10 and 5 seconds). `tick()` releases expired requests
 but does not schedule replacements. Other handled events trigger scheduling;
 rejected pieces now wait for recovery cooldowns for that provider, and corrupt
 providers are excluded for the affected piece until success. Other providers
-may supply the piece immediately. Transport-queue cancellation and bounded
-upload work remain future work. The bridge's inbound event queue is unbounded.
+may supply the piece immediately. Transport-queue cancellation remains networking work; bounded uploads are
+now available through the combined Part 4 factory. The bridge's inbound event queue is unbounded.
 
 ## Verification
 

@@ -20,14 +20,16 @@ is retained for direct legacy imports; the coordinator no longer uses it.
 - `SchedulerConfig` defaults to the project constants: four outstanding requests
   per connection, ten active connections, ten-second response timeout and
   five-second send-confirmation timeout. Window sizes 1 through 4 are supported.
-- The picker produces rarest-first candidate orders with randomized ties. The
-  pipeline fills one slot per source per round and rotates the first source
-  across fill calls. Source availability includes choking neighbors.
+- The coordinator chooses globally among requestable pieces, then selects a
+  least-loaded source with rotating ties. Source availability includes choking
+  neighbors. The standalone pipeline retains its round-robin `fill` API.
 - Register only handshake-validated connections. Duplicate active provider IDs,
   reused connection IDs and excess connections are refused and recorded in
   `snapshot()['problems']`. New IDs may reconnect a disconnected provider.
 - Interest must successfully enqueue before requesting. Remote choke or lost
-  interest cancels unanswered work, preserving a piece already being verified.
+  interest cancels unsent work, preserving sent and verifying requests.
+- The integrated pipeline uses connection-scoped request IDs; standalone default
+  IDs remain globally assigned. See [original-plan alignment](original-plan-alignment.md).
 - Reservations are created before enqueue. Failed enqueues release their slots;
   no busy retry loop runs inside one scheduling call.
 - RequestSent confirms the actual socket-write timestamp. Response timeouts

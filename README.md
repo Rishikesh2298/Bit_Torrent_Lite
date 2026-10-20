@@ -29,9 +29,10 @@ A simplified peer-to-peer file distribution system inspired by BitTorrent, built
 - [x] Rarest-first piece selection (standalone picker tested)
 - [x] Request pipelining (four-slot scheduler; transport wiring still pending)
 - [ ] Concurrent multi-peer transfers (6+ peers)
-- [ ] Peer failure handling
+- [x] Peer failure handling (scheduler recovery; network integration pending)
 - [x] File reconstruction and verification
-- [ ] Choking/unchoking (simplified tit-for-tat)
+- [x] Bounded upload service (verified pieces and acknowledged byte accounting)
+- [x] Choking/unchoking (acknowledged regular and optimistic upload slots)
 
 ---
 
@@ -107,16 +108,25 @@ Part 2's standalone `request_pipeline` package now owns its request lifecycle,
 with four requests per connection by default and fair rarest-first allocation.
 See [Part 2 integration](docs/request-pipeline.md) for behavior and validation.
 Part 3's `recovery_policy` now supplies retry backoff, provider exclusions,
-selection strategies and bounded endgame duplicates with CANCEL messages.
+selection strategies and cancellation. The project defaults prohibit endgame
+duplicates, as required by the original plan.
 See [recovery integration](docs/recovery-policy.md) for configuration and limits.
+The combined Part 4 adds `upload_service` and `choking_policy`, connected through
+`SchedulerBridge.create_coordinator(store)`. See [uploads and choking](docs/upload-and-choking.md)
+for setup, transport acknowledgement requirements, tests and remaining limits.
+The project uses five-second interval scoring and stable rotating upload slots.
+See [original-plan alignment](docs/original-plan-alignment.md) for current
+behavior, transport handoff requirements, and remaining team integration.
 Run `python -m examples.scheduler_demo` for the single-request example.
 See [scheduler integration](docs/scheduler.md) for protocol/storage adapters,
 interfaces, limitations, and test coverage. The peer CLI is still a stub.
 
 Run `python -m pytest` from the repository root after installing dependencies.
 Tests cover the implemented file manager, metadata CLI, message objects,
-peer-state container, piece picker and package imports. Legacy placeholder
-tests remain skipped; a passing suite does not establish a working swarm.
+peer-state container, piece picker and package imports. The 56 legacy placeholders
+now execute real checks. Tracker state is implemented and all tests pass;
+see [test audit](docs/test-audit.md).
+Message-object tests do not establish working TCP framing or a working swarm.
 
 ---
 

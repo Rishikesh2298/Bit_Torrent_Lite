@@ -72,6 +72,27 @@ class Disconnected:
     connection_id: int
 
 
+@dataclass(frozen=True)
+class UploadRequested:
+    connection_id: int
+    request_id: int
+    piece_index: int
+
+
+@dataclass(frozen=True)
+class UploadCancelled:
+    connection_id: int
+    request_id: int
+    piece_index: int
+
+
+@dataclass(frozen=True)
+class UploadSendCompleted:
+    connection_id: int
+    message: object
+    applied: bool
+
+
 # returned by Coordinator.tick()
 @dataclass(frozen=True)
 class ExpiredRequest:

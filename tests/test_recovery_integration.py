@@ -77,6 +77,8 @@ def test_local_send_failures_cool_down_without_retry_streak(kind):
 
 
 def endgame(transport=None, config=None):
+    # Explicit standalone extension; original project defaults prohibit copies.
+    config = config or SchedulerConfig(recovery=RecoveryConfig())
     c, clock, t, store, pieces = scheduler(1, transport, config)
     connect(c, 1, 1)
     first = requests(c)[0]
@@ -219,7 +221,8 @@ def test_bridge_endgame_emits_cancel_and_assembles_real_bytes(tmp_path):
     clock = ManualClock()
     bridge = SchedulerBridge(clock)
     queues = {1: [], 2: []}
-    c = Coordinator(1, bridge, FileStoreAdapter(store), clock)
+    c = Coordinator(1, bridge, FileStoreAdapter(store), clock,
+                    SchedulerConfig(recovery=RecoveryConfig()))
     for cid in (1, 2):
         bridge.register(cid, str(cid), queues[cid].append)
         bridge.received(cid, m.BitfieldMsg([True]))

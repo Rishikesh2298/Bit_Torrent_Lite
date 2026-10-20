@@ -88,8 +88,7 @@ def test_timeout_starts_on_send_and_unsent_has_separate_limit():
     assert c.tick() == []
     clock.advance(1)
     assert c.tick()[0].kind == "response_timeout"
-    assert not c.snapshot()["pending"]
-    c.schedule()
+    assert pending(c)["request_id"] != r["request_id"]
     clock.advance(5)
     assert c.tick()[0].kind == "send_unconfirmed"
 
@@ -131,7 +130,7 @@ def test_failed_request_released_and_stale_response_ignored(kind):
         clock.advance(2 if kind == "reject" else 1)
         c.schedule()
     new = pending(c)
-    assert new["request_id"] > r["request_id"]
+    assert (new["connection_id"], new["request_id"]) != (r["connection_id"], r["request_id"])
     c.handle_event(response(r, pieces[0]))
     assert c.snapshot()["owned"] == 0
     assert pending(c) == new
@@ -254,7 +253,7 @@ def test_protocol_bridge_download_to_real_disk_and_assemble(tmp_path):
     assert store.assemble_file(str(tmp_path / "result.bin"))
     assert (tmp_path / "result.bin").read_bytes() == b"abcdefghij"
     assert c.snapshot()["owned"] == 3
-    assert "complete" not in c.snapshot()
+    assert not c.snapshot()["complete"]
     assert not c.snapshot()["pending"]
 
 
@@ -276,7 +275,9 @@ def test_bridge_contains_queue_failures_and_serializes_worker_events():
     with ThreadPoolExecutor(max_workers=8) as pool:
         list(pool.map(lambda _: bridge.received(2, m.Have(0)), range(200)))
     bridge.drain(c)
-    assert c.snapshot()["availability"][0] == 2
+    # Saturation closes the affected session and reconciles even a lost close event.
+    assert c.snapshot()["availability"][0] == 1
+    assert not c.snapshot()["neighbors"][2]["active"]
     bridge.disconnected(2)
     bridge.drain(c)
     assert not bridge.send_have(2, 0)

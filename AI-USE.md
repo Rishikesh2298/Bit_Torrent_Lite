@@ -28,6 +28,30 @@ An OpenAI assistant integrated policy decisions with scheduler lifecycle events,
 added cancellation dispatch and capacity-failure handling, and wrote policy,
 recovery and disk/bridge regression tests. The original archive is unchanged.
 
+## Combined Part 4
+
+Prabhat supplied `part4.zip` and `choking_policy.zip`. Their standalone packages
+are retained as `upload_service` and `choking_policy`. An OpenAI assistant
+connected bounded uploads, permission intents, transport acknowledgements and
+verified contribution accounting to the scheduler, added validation fixes and
+tests, and documented the integration. Both source archives remain unchanged.
+
+At Prabhat's request, the assistant also replaced the 56 skipped test placeholders
+with executable checks, fixed handshake-version validation exposed by those checks,
+and documented the seven failures caused by the unfinished tracker state.
+On request, the assistant implemented the tracker-state methods and added regression
+coverage for heartbeat errors, expiry boundaries, detached snapshots and concurrent
+membership changes. The tracker HTTP server remains unfinished.
+The expanded audit added worker-transfer and invalid-input regressions, then fixed
+partial mutations on invalid upload shutdown/dispatch arguments and invalid tracker
+expiry timeouts. Validation included the full suite with warnings treated as errors,
+source compilation and the scheduler demo.
+At Prabhat's request, the assistant compared the integrated code with the original
+September individual/master plans and aligned project scheduling, request IDs,
+CHOKE behavior, timer recovery, upload selection, cancellation hooks, event bounds
+and final-assembly status. Original-plan regressions and handoff documentation
+were added; standalone optional behaviors remain separate from project defaults.
+
 ## Earlier project assistance
 
 - **15 September 2026 — Google Antigravity:** Architecture, interfaces, and scaffolding.

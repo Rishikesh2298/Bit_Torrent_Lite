@@ -40,7 +40,8 @@ def test_default_four_slots_six_peers_and_refill():
     assert snap["owned"] == 1
     assert len(snap["pending"]) == 24
     assert snap["pipeline_counters"]["completed"] == 1
-    assert r["request_id"] not in {p["request_id"] for p in snap["pending"]}
+    assert (r["connection_id"], r["request_id"]) not in {
+        (p["connection_id"], p["request_id"]) for p in snap["pending"]}
 
 
 def test_ten_peer_cap_duplicate_provider_and_reconnect():
@@ -71,16 +72,15 @@ def test_mixed_sent_unsent_deadlines_and_stale_events():
     expired = c.tick()
     assert len(expired) == 2
     assert {r.kind for r in expired} == {"send_unconfirmed"}
-    assert len(c.snapshot()["pending"]) == 2
-    c.schedule()
+    # Timer processing refills free slots with other eligible pieces.
     assert len(c.snapshot()["pending"]) == 4
     c.handle_event(response(original[2], pieces[original[2]["piece_index"]]))
     assert c.snapshot()["owned"] == 0
     clock.advance(7)
     expired = c.tick()
     assert sorted(r.kind for r in expired) == ["response_timeout"] * 2 + ["send_unconfirmed"] * 2
-    assert not c.snapshot()["pending"]
-    assert c.snapshot()["piece_states"]["MISSING"] == 8
+    assert all(r["request_id"] > 6 for r in c.snapshot()["pending"])
+    assert c.snapshot()["owned"] == 0
 
 
 def test_failed_enqueue_batch_is_bounded_and_released():

@@ -18,6 +18,7 @@ Types:
 
 from dataclasses import dataclass
 from typing import Any
+from bittorrent_lite.config import PROTOCOL_VERSION
 
 # Registry for deserialization dispatch
 MESSAGE_REGISTRY: dict[str, type] = {}
@@ -66,8 +67,11 @@ class Handshake(Message):
 
     @classmethod
     def from_header(cls, header: dict[str, Any], payload: bytes) -> 'Handshake':
+        version = header.get("protocol_version")
+        if type(version) is not int or version != PROTOCOL_VERSION:
+            raise ValueError("Unsupported handshake protocol version")
         return cls(
-            protocol_version=header["protocol_version"],
+            protocol_version=version,
             file_id=header["file_id"],
             peer_id=header["peer_id"]
         )

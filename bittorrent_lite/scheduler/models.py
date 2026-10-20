@@ -36,7 +36,8 @@ class SchedulerConfig:
     response_timeout: float = REQUEST_TIMEOUT
     send_confirm_timeout: float = QUEUE_SEND_TIMEOUT
     max_connections: int = MAX_CONNECTIONS
-    recovery: RecoveryConfig = field(default_factory=RecoveryConfig)
+    recovery: RecoveryConfig = field(default_factory=lambda: RecoveryConfig(
+        endgame_enabled=False, max_copies=1))
     recovery_seed: int = 0
 
     def __post_init__(self):

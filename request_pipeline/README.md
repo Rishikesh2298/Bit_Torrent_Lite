@@ -13,6 +13,12 @@ before mutating state. Invalid programmer input raises `ValueError`; unknown
 request keys in event calls return an empty tuple / `False`.
 
 ## Types (`models.py`)
+
+Project integration extensions: construct with `connection_scoped_ids=True` to
+start IDs at one on each new connection. Pass `retain_sent=True` to
+`set_permissions` to preserve already-transmitted work on permission loss.
+Both options default to False, preserving the standalone contract below.
+Always correlate using the complete request key.
 - `RequestKey(connection_id, request_id, piece_index)` frozen, hashable.
 - `RequestView(key, provider_id, queued_at, sent_at, deadline, verifying)`
   frozen snapshot.

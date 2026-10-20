@@ -6,7 +6,7 @@ The tracker_server.py handles HTTP; this module handles the data.
 
 Interface:
     TrackerState.register_peer(peer_id, ip, port) -> None
-    TrackerState.update_peer(peer_id, bitfield) -> None
+    TrackerState.update_peer(peer_id) -> None
     TrackerState.get_peer_list(exclude_peer_id) -> list[PeerInfo]
     TrackerState.remove_stale_peers(timeout_seconds) -> list[str]
     TrackerState.remove_peer(peer_id) -> None
@@ -29,6 +29,8 @@ Stale peer cleanup:
 """
 
 import threading
+import time
+import math
 from bittorrent_lite.types import PeerRecord as PeerInfo
 
 
@@ -55,8 +57,12 @@ class TrackerState:
             ip: Peer's IP address.
             port: Peer's listening port.
         """
-        # TODO: Debargha — implement this
-        raise NotImplementedError
+        with self._lock:
+            self._peers[peer_id] = {
+                "ip": ip,
+                "port": port,
+                "last_seen": time.monotonic(),
+            }
 
     def update_peer(self, peer_id: str) -> None:
         """
@@ -68,8 +74,8 @@ class TrackerState:
         Raises:
             KeyError: If peer_id is not registered.
         """
-        # TODO: Debargha — implement this
-        raise NotImplementedError
+        with self._lock:
+            self._peers[peer_id]["last_seen"] = time.monotonic()
 
     def get_peer_list(self, exclude_peer_id: str = "") -> list[PeerInfo]:
         """
@@ -81,8 +87,12 @@ class TrackerState:
         Returns:
             List of PeerInfo for all other peers.
         """
-        # TODO: Debargha — implement this
-        raise NotImplementedError
+        with self._lock:
+            return [
+                PeerInfo(peer_id=peer_id, ip=record["ip"], port=record["port"])
+                for peer_id, record in self._peers.items()
+                if peer_id != exclude_peer_id
+            ]
 
     def remove_stale_peers(self, timeout_seconds: int) -> list[str]:
         """
@@ -93,9 +103,23 @@ class TrackerState:
 
         Returns:
             List of peer_ids that were removed.
+
+        Raises:
+            ValueError: If the timeout is not finite and nonnegative.
         """
-        # TODO: Debargha — implement this
-        raise NotImplementedError
+        if (type(timeout_seconds) not in (int, float)
+                or timeout_seconds < 0
+                or (isinstance(timeout_seconds, float) and not math.isfinite(timeout_seconds))):
+            raise ValueError("timeout_seconds must be finite and nonnegative")
+        with self._lock:
+            now = time.monotonic()
+            stale = [
+                peer_id for peer_id, record in self._peers.items()
+                if now - record["last_seen"] > timeout_seconds
+            ]
+            for peer_id in stale:
+                del self._peers[peer_id]
+            return stale
 
     def remove_peer(self, peer_id: str) -> None:
         """
@@ -104,10 +128,10 @@ class TrackerState:
         Args:
             peer_id: Peer to remove.
         """
-        # TODO: Debargha — implement this
-        raise NotImplementedError
+        with self._lock:
+            self._peers.pop(peer_id, None)
 
     def peer_count(self) -> int:
         """Return the number of currently registered peers."""
-        # TODO: Debargha — implement this
-        raise NotImplementedError
+        with self._lock:
+            return len(self._peers)

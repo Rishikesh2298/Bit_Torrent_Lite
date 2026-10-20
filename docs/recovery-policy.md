@@ -1,5 +1,9 @@
 # Part 3 recovery-policy integration
 
+The original-plan project defaults now disable endgame duplication. The optional
+endgame behavior below is retained only for explicit extension configurations.
+Timer ticks now refill eligible work. See [original-plan alignment](original-plan-alignment.md).
+
 The supplied `recovery_policy_part3.zip` is imported unchanged at the Python
 source level as `recovery_policy`. Its README is placed inside that directory
 to preserve the project's main README. The original ZIP is unchanged.
@@ -14,13 +18,15 @@ python -m recovery_policy
 The coordinator now combines three responsibilities without duplicating them:
 
 - PiecePicker counts neighborhood availability, including choking neighbors.
-- RecoveryPolicy ranks candidates and maintains provider/piece penalties.
+- RecoveryPolicy filters eligible candidates and maintains provider/piece penalties.
 - PipelineManager owns live requests, slots, identity, verification and ownership.
 
 The default strategy remains rarest-first, with randomized ties. Sequential
 and random strategies can be selected through `RecoveryConfig`. The caller's
 existing `rng` argument, when supplied, provides the recovery RNG seed;
 otherwise `SchedulerConfig.recovery_seed` defaults to zero.
+The coordinator selects globally among eligible pieces before choosing a source,
+so an earlier source cannot force a common piece ahead of a requestable rare one.
 
 Only successful removal of a matching live request records failure. Replayed
 rejections, duplicate responses and late send failures cannot penalize a

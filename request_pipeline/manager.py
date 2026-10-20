@@ -40,7 +40,11 @@ class _Req:
 
 
 class PipelineManager:
-    def __init__(self, num_pieces, *, initially_owned=(), config=None):
+    def __init__(self, num_pieces, *, initially_owned=(), config=None, connection_scoped_ids=False):
+        if type(connection_scoped_ids) is not bool:
+            raise ValueError("connection_scoped_ids must be a boolean")
+        self._connection_scoped_ids = connection_scoped_ids
+        self._connection_request_ids = {}
         if not is_int(num_pieces) or num_pieces <= 0:
             raise ValueError("num_pieces must be a positive integer")
         if config is None:
@@ -133,7 +137,11 @@ class PipelineManager:
         return True
 
     def _create(self, cid: int, conn: _Conn, piece: int, now) -> RequestView:
-        key = RequestKey(cid, self._next_request_id, piece)
+        rid = (self._connection_request_ids.get(cid, 1)
+               if self._connection_scoped_ids else self._next_request_id)
+        key = RequestKey(cid, rid, piece)
+        if self._connection_scoped_ids:
+            self._connection_request_ids[cid] = rid + 1
         self._next_request_id += 1
         req = _Req(key, conn.provider_id, now)
         self._pending[key] = req
@@ -159,7 +167,7 @@ class PipelineManager:
         return Outcome(kind, key, reason, now)
 
     def _sorted_keys(self, keys: Iterable[RequestKey]) -> List[RequestKey]:
-        return sorted(keys, key=lambda k: k.request_id)
+        return sorted(keys, key=lambda k: (k.request_id, k.connection_id, k.piece_index))
 
     # ------------------------------------------------------ connections
     def register_connection(self, connection_id, provider_id, *, now) -> None:
@@ -195,11 +203,13 @@ class PipelineManager:
         conn.available = set(items)
 
     def set_permissions(self, connection_id, *, interested, unchoked,
-                        now) -> Tuple[Outcome, ...]:
+                        now, retain_sent=False) -> Tuple[Outcome, ...]:
         self._check_now(now)
         conn = self._conn(connection_id)
         if not isinstance(interested, bool) or not isinstance(unchoked, bool):
             raise ValueError("interested and unchoked must be booleans")
+        if type(retain_sent) is not bool:
+            raise ValueError("retain_sent must be a boolean")
         self._tick(now)
         revoked = ((conn.interested and not interested)
                    or (conn.unchoked and not unchoked))
@@ -208,7 +218,8 @@ class PipelineManager:
         out: List[Outcome] = []
         if revoked:
             keys = [k for k, r in self._pending.items()
-                    if k.connection_id == connection_id and not r.verifying]
+                    if k.connection_id == connection_id and not r.verifying
+                    and not (retain_sent and r.sent_at is not None)]
             for k in self._sorted_keys(keys):
                 out.append(self._finish("canceled", k, "permission_revoked",
                                         now))
@@ -328,7 +339,7 @@ class PipelineManager:
                     due.append((k, "send_unconfirmed"))
             elif r.deadline is not None and now >= r.deadline:
                 due.append((k, "response_timeout"))
-        due.sort(key=lambda t: t[0].request_id)
+        due.sort(key=lambda t: (t[0].request_id, t[0].connection_id, t[0].piece_index))
         return tuple(self._finish("expired", k, why, now) for k, why in due)
 
     # ------------------------------------------------------ verification

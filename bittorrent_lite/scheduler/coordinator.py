@@ -13,7 +13,7 @@ from .piece_picker import PiecePicker
 class Coordinator:
     def __init__(self, num_pieces: int, transport: Transport, store: PieceStore,
                  clock: Clock, config: Optional[SchedulerConfig] = None,
-                 rng: Optional[random.Random] = None):
+                 rng: Optional[random.Random] = None, *, uploads=None):
         self._n = num_pieces
         self._transport = transport
         self._store = store
@@ -23,9 +23,14 @@ class Coordinator:
         local = list(store.verified_bitfield())
         self._picker.validate_bitfield(local)
         self._local = [bool(b) for b in local]
+        self.uploads = uploads
+        if uploads is not None:
+            uploads.set_seeder(all(self._local))
         self._pipeline = PipelineManager(
             num_pieces, initially_owned=[i for i, have in enumerate(local) if have],
-            config=self._config.pipeline_config())
+            config=self._config.pipeline_config(), connection_scoped_ids=True)
+        self._selection_rng = rng if rng is not None else random.Random(self._config.recovery_seed)
+        self._source_cursor = 0
         self._recovery = RecoveryPolicy(num_pieces, self._config.recovery,
                                         seed=(rng.getrandbits(64) if rng is not None
                                               else self._config.recovery_seed))
@@ -34,6 +39,7 @@ class Coordinator:
                 self._recovery.succeeded(now=clock.now(), provider="local", piece=i)
         self._neighbors: dict[int, NeighborState] = {}
         self._storage_error = None
+        self._complete = False
         self._recovery_error = None
         self._invalid_pieces = []
         self._problems = []
@@ -49,6 +55,9 @@ class Coordinator:
             ev.PieceReceived: self._on_piece,
             ev.RejectReceived: self._on_reject,
             ev.Disconnected: self._on_disconnected,
+            ev.UploadRequested: self._on_upload_request,
+            ev.UploadCancelled: self._on_upload_cancel,
+            ev.UploadSendCompleted: self._on_upload_completed,
         }
 
     def handle_event(self, event) -> None:
@@ -57,11 +66,32 @@ class Coordinator:
             raise TypeError(f"unknown event type {type(event).__name__}")
         handler(event)
         self.schedule()
+        self._tick_uploads()
+
+    def _tick_uploads(self):
+        if self.uploads is not None:
+            self.uploads.tick()
+            peers = {p["peer_id"]: p for p in self.uploads.snapshot()["policy"]["peers"]}
+            for n in self._neighbors.values():
+                if n.active and n.peer_id in peers:
+                    n.am_choking = not peers[n.peer_id]["confirmed"]
+
+    def _on_upload_request(self, e):
+        if self.uploads is not None:
+            self.uploads.request(e.connection_id, e.request_id, e.piece_index)
+
+    def _on_upload_cancel(self, e):
+        if self.uploads is not None:
+            self.uploads.cancel(e.connection_id, e.request_id, e.piece_index)
+
+    def _on_upload_completed(self, e):
+        if self.uploads is not None:
+            self.uploads.completed(e.connection_id, e.message, e.applied)
 
     def _permissions(self, n, reason=None):
         outcomes = self._pipeline.set_permissions(
             n.connection_id, interested=n.am_interested,
-            unchoked=not n.peer_choking, now=self._clock.now())
+            unchoked=not n.peer_choking, now=self._clock.now(), retain_sent=True)
         for outcome in outcomes:
             if reason:
                 self._record_failure(outcome.key, reason)
@@ -78,6 +108,9 @@ class Coordinator:
             self._recovery_error = str(exc)
 
     def _cancel_wire(self, key):
+        withdraw = getattr(self._transport, "withdraw_request", None)
+        if callable(withdraw) and withdraw(key.connection_id, key.request_id, key.piece_index):
+            return
         send = getattr(self._transport, "send_cancel", None)
         if not callable(send):
             return
@@ -118,7 +151,7 @@ class Coordinator:
             return 0
         # Reserve the entire bounded batch before enqueueing. A rejected enqueue
         # is cleaned once; retry waits for the next scheduling call.
-        requests = self._pipeline.fill(orders, now=self._clock.now())
+        requests = self._fill_ranked(orders, availability)
         issued = 0
         for r in requests:
             if self._recovery_error is None:
@@ -128,6 +161,40 @@ class Coordinator:
         if self._recovery_error is None:
             issued += self._schedule_duplicates(orders)
         return issued
+
+    def _fill_ranked(self, orders, availability):
+        """Choose pieces globally, then choose a least-loaded eligible source."""
+        requests = []
+        while True:
+            snap = self._pipeline.snapshot()
+            counts = {r["connection_id"]: r["count"] for r in snap["outstanding"]}
+            reserved = {r["piece_index"] for r in snap["pending"]}
+            sources = {}
+            for cid, candidates in orders.items():
+                if counts.get(cid, 0) >= self._config.request_window:
+                    continue
+                for piece in candidates:
+                    if piece not in reserved:
+                        sources.setdefault(piece, []).append(cid)
+            if not sources:
+                return requests
+            candidates = sorted(sources)
+            strategy = self._config.recovery.strategy
+            if strategy == "sequential":
+                piece = candidates[0]
+            else:
+                if strategy == "rarest-first":
+                    rarity = min(availability[p] for p in candidates)
+                    candidates = [p for p in candidates if availability[p] == rarity]
+                piece = self._selection_rng.choice(candidates)
+            load = min(counts.get(cid, 0) for cid in sources[piece])
+            eligible = sorted(cid for cid in sources[piece] if counts.get(cid, 0) == load)
+            cid = next((cid for cid in eligible if cid > self._source_cursor), eligible[0])
+            request = self._pipeline.reserve(cid, piece, now=self._clock.now())
+            if request is None:
+                raise RuntimeError("eligible reservation unexpectedly refused")
+            self._source_cursor = cid
+            requests.append(request)
 
     def _schedule_duplicates(self, orders):
         # Legacy transports may still download normally, but duplicates need
@@ -170,6 +237,8 @@ class Coordinator:
         for o in outcomes:
             self._record_failure(o.key, o.reason)
             self._cancel_wire(o.key)
+        self._tick_uploads()
+        self.schedule()
         return [ev.ExpiredRequest(o.key.connection_id, o.key.request_id,
                                   o.key.piece_index, o.reason) for o in outcomes]
 
@@ -179,12 +248,16 @@ class Coordinator:
         return {
             "owned": len(pipeline["owned"]), "total": self._n,
             "ready_to_assemble": len(pipeline["owned"]) == self._n,
+            "complete": self._complete,
+            "stalled": any(not self._local[i] and not count
+                           for i, count in enumerate(self._picker.availability_snapshot())),
             "piece_states": pipeline["piece_state_counts"],
             "availability": self._picker.availability_snapshot(),
             "paused": self._storage_error is not None or self._recovery_error is not None,
             "storage_error": self._storage_error,
             "recovery_error": self._recovery_error,
             "recovery": self._recovery.snapshot(now=self._clock.now()),
+            "uploads": self.uploads.snapshot() if self.uploads is not None else None,
             "invalid_pieces": list(self._invalid_pieces),
             "problems": list(self._problems),
             "pipeline_counters": pipeline["counters"],
@@ -201,6 +274,30 @@ class Coordinator:
                          "sent": r["sent_at"] is not None, "verifying": r["verifying"],
                          "deadline": r["deadline"]} for r in pipeline["pending"]],
         }
+
+    def finalize_download(self, output_path):
+        """Runtime calls after all pieces arrive; COMPLETE requires final hash success.
+
+        Keep the coordinator alive afterward to serve verified pieces. Assembly
+        is synchronous for the bounded file size in the original project plan.
+        """
+        if self._complete:
+            return True
+        if not all(self._local):
+            raise ValueError("cannot assemble before all pieces are verified")
+        try:
+            ok = self._store.assemble_file(output_path)
+        except OSError as exc:
+            self._storage_error = f"{type(exc).__name__}: {exc}"
+            return False
+        if not ok:
+            self._storage_error = "final assembly or file verification failed"
+            return False
+        self._storage_error = None
+        self._complete = True
+        if self.uploads is not None:
+            self.uploads.set_seeder(True)
+        return True
 
     def resume_after_storage_error(self) -> None:
         self._storage_error = None
@@ -225,6 +322,13 @@ class Coordinator:
         except ValueError as exc:
             self._problems.append((e.connection_id, str(exc)))
             return
+        if self.uploads is not None:
+            try:
+                self.uploads.connect(e.connection_id, e.peer_id)
+            except (ValueError, OverflowError, RuntimeError) as exc:
+                self._pipeline.disconnect(e.connection_id, now=self._clock.now())
+                self._problems.append((e.connection_id, str(exc)))
+                return
         self._neighbors[e.connection_id] = NeighborState(e.connection_id, e.peer_id)
 
     def _on_bitfield(self, e):
@@ -269,6 +373,8 @@ class Coordinator:
         n = self._active(e.connection_id)
         if n is not None:
             n.peer_interested = e.interested
+            if self.uploads is not None:
+                self.uploads.interested(e.connection_id, e.interested)
 
     def _on_request_sent(self, e):
         self._pipeline.confirm_sent(self._key(e), sent_at=e.sent_at, now=self._clock.now())
@@ -284,6 +390,8 @@ class Coordinator:
             self._record_failure(self._key(e), "reject")
 
     def _on_disconnected(self, e):
+        if self.uploads is not None:
+            self.uploads.disconnect(e.connection_id)
         outcomes = self._pipeline.disconnect(e.connection_id, now=self._clock.now())
         for o in outcomes:
             self._record_failure(o.key, "disconnect")
@@ -319,6 +427,8 @@ class Coordinator:
             if o.kind == "canceled":
                 self._cancel_wire(o.key)
         self._local[e.piece_index] = True
+        if self.uploads is not None:
+            self.uploads.contribution(e.connection_id, len(e.data))
         for n in self._neighbors.values():
             if n.active and not self._transport.send_have(n.connection_id, e.piece_index):
                 self._problems.append((n.connection_id, f"HAVE enqueue failed for piece {e.piece_index}"))
