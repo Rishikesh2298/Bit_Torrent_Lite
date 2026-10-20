@@ -1,165 +1,627 @@
 """
-Piece Picker — Prabhat's Module
+BitTorrent-Lite Piece Picker.
 
-Implements the RAREST-FIRST piece selection algorithm.
+Supports both:
 
-Concept:
-    Maintain a count of how many peers have each piece.
-    When selecting a piece to download, choose the piece that:
-    1. I do NOT already have
-    2. At least one connected peer DOES have
-    3. Has the LOWEST availability count (rarest)
-    4. Is NOT already being requested
+1. Stateful API:
+       picker.pick_piece()
 
-    If there's a tie, break randomly (to spread load).
+2. Compatibility API:
+       picker.pick_piece(owned, remote, reserved)
 
-Why rarest-first?
-    If everyone downloads the most common pieces first, the rare pieces
-    risk becoming unavailable if the only peer(s) holding them disconnect.
-    Rarest-first ensures piece diversity in the swarm, making the system
-    more resilient and efficient.
-
-Example:
-    My bitfield:     [T, T, F, F, F]   (I have pieces 0 and 1)
-    Availability:    [5, 4, 1, 3, 2]   (counts from all connected peers)
-    Already requested: {4}
-
-    Candidates: pieces 2, 3 (piece 4 is already requested)
-    Piece 2 has availability=1 (rarest) → select piece 2
-
-Interface:
-    PiecePicker.update_availability(peer_id, bitfield) -> None
-    PiecePicker.peer_has_piece(peer_id, piece_index) -> None
-    PiecePicker.peer_disconnected(peer_id, bitfield) -> None
-    PiecePicker.pick_piece(my_bitfield, peer_bitfield, requested) -> int | None
-    PiecePicker.get_availability() -> list[int]    (for debugging/experiments)
+The compatibility API uses bitfields for owned/remote.
 """
+
+from __future__ import annotations
 
 import random
 import threading
+from collections.abc import Iterable
+from typing import Dict, Optional, Set
+
+
+class _PieceSetView(set):
+    """Set-like view that is also callable as local_pieces()."""
+
+    def __call__(self):
+        return set(self)
+
+
+class _AvailabilityView(list):
+    """Availability snapshot supporting availability(index)."""
+
+    def __call__(self, index: int) -> int:
+        if isinstance(index, bool) or not isinstance(index, int):
+            raise ValueError("piece index must be an integer")
+
+        if index < 0 or index >= len(self):
+            raise ValueError("piece index out of range")
+
+        return self[index]
 
 
 class PiecePicker:
-    """
-    Rarest-first piece selection.
+    def __init__(
+        self,
+        piece_count: int,
+        local_pieces: Optional[Iterable[int]] = None,
+        seed: Optional[int] = None,
+    ) -> None:
 
-    Counts distinct connected neighbors' advertisements. Permission and
-    request-window checks belong to the coordinator before calling pick_piece.
-    """
+        if isinstance(piece_count, bool) or not isinstance(piece_count, int):
+            raise ValueError("piece_count must be an integer")
 
-    def __init__(self, num_pieces: int):
-        """
-        Initialize piece picker.
+        if piece_count <= 0:
+            raise ValueError("piece_count must be positive")
 
-        Args:
-            num_pieces: Total number of pieces in the torrent.
-        """
-        if type(num_pieces) is not int or num_pieces < 0:
-            raise ValueError("num_pieces must be a nonnegative integer")
-        self.num_pieces = num_pieces
-        # availability[i] = number of connected peers that have piece i
-        self.availability: list[int] = [0] * num_pieces
-        self._peer_bitfields: dict[str, list[bool]] = {}
-        self._lock = threading.Lock()
+        self.piece_count = piece_count
+        self._seed = seed
 
-    def _check_bitfield(self, bitfield: list[bool]) -> None:
-        if len(bitfield) != self.num_pieces:
-            raise ValueError("bitfield length must match the piece count")
-        if any(type(bit) not in (int, bool) or bit not in (0, 1)
-               for bit in bitfield):
-            raise ValueError("bitfield entries must be zero or one")
+        self._local_pieces: Set[int] = set()
+        self._reserved: Set[int] = set()
 
-    def _recount(self) -> None:
-        """Recompute neighborhood counts while holding the picker lock."""
-        self.availability = [
-            sum(bits[index] for bits in self._peer_bitfields.values())
-            for index in range(self.num_pieces)
+        # peer_id -> pieces advertised by that peer
+        self._peer_pieces: Dict[str, Set[int]] = {}
+
+        # piece_index -> number of peers advertising that piece
+        self._availability = [0] * piece_count
+
+        self._lock = threading.RLock()
+
+        if local_pieces is not None:
+            self._local_pieces = self._validate_piece_indices(
+                local_pieces
+            )
+
+    # ================================================================
+    # Validation
+    # ================================================================
+
+    def _validate_piece_index(self, piece_index: int) -> int:
+        if isinstance(piece_index, bool):
+            raise ValueError("piece index must be an integer")
+
+        if not isinstance(piece_index, int):
+            raise ValueError("piece index must be an integer")
+
+        if piece_index < 0 or piece_index >= self.piece_count:
+            raise ValueError(
+                f"piece index {piece_index} out of range"
+            )
+
+        return piece_index
+
+    def _validate_piece_indices(
+        self,
+        pieces: Iterable[int],
+    ) -> Set[int]:
+        if isinstance(pieces, (str, bytes, bytearray)):
+            raise ValueError("pieces must be an iterable of integers")
+
+        try:
+            values = list(pieces)
+        except TypeError as exc:
+            raise ValueError(
+                "pieces must be an iterable of integers"
+            ) from exc
+
+        result = set()
+
+        for piece in values:
+            result.add(self._validate_piece_index(piece))
+
+        return result
+
+    def _validate_bitfield(
+        self,
+        bits: Iterable[int],
+    ) -> list[int]:
+        if isinstance(bits, (str, bytes, bytearray)):
+            raise ValueError("invalid bitfield")
+
+        try:
+            values = list(bits)
+        except TypeError as exc:
+            raise ValueError("invalid bitfield") from exc
+
+        if len(values) != self.piece_count:
+            raise ValueError(
+                f"bitfield must contain exactly {self.piece_count} entries"
+            )
+
+        result = []
+
+        for value in values:
+            if isinstance(value, bool):
+                value = int(value)
+
+            if value not in (0, 1):
+                raise ValueError(
+                    "bitfield values must be 0 or 1"
+                )
+
+            result.append(int(value))
+
+        return result
+
+    def _bitfield_to_set(
+        self,
+        bits: Iterable[int],
+    ) -> Set[int]:
+        values = self._validate_bitfield(bits)
+
+        return {
+            index
+            for index, bit in enumerate(values)
+            if bit == 1
+        }
+
+    # ================================================================
+    # Properties
+    # ================================================================
+
+    @property
+    def local_pieces(self):
+        with self._lock:
+            return _PieceSetView(self._local_pieces)
+
+    @property
+    def availability(self):
+        with self._lock:
+            return _AvailabilityView(self._availability)
+
+    def get_availability(
+        self,
+        piece_index: Optional[int] = None,
+    ):
+        if piece_index is None:
+            with self._lock:
+                return list(self._availability)
+
+        self._validate_piece_index(piece_index)
+
+        with self._lock:
+            return self._availability[piece_index]
+
+    @property
+    def reserved_pieces(self) -> Set[int]:
+        with self._lock:
+            return set(self._reserved)
+
+    @property
+    def reserved_count(self) -> int:
+        with self._lock:
+            return len(self._reserved)
+
+    @property
+    def completed_count(self) -> int:
+        with self._lock:
+            return len(self._local_pieces)
+
+    @property
+    def remaining_count(self) -> int:
+        with self._lock:
+            return self.piece_count - len(self._local_pieces)
+
+    @property
+    def is_complete(self) -> bool:
+        return self.remaining_count == 0
+
+    @property
+    def complete(self) -> bool:
+        return self.is_complete
+
+    # ================================================================
+    # Availability management
+    # ================================================================
+
+    def _recalculate_availability(self) -> None:
+        self._availability = [0] * self.piece_count
+
+        for pieces in self._peer_pieces.values():
+            for piece in pieces:
+                self._availability[piece] += 1
+
+    def update_availability(
+        self,
+        peer_id: str,
+        bits: Iterable[int],
+    ) -> None:
+        pieces = self._bitfield_to_set(bits)
+
+        with self._lock:
+            self._peer_pieces[peer_id] = pieces
+            self._recalculate_availability()
+
+    def update_peer(
+        self,
+        peer_id: str,
+        pieces: Iterable[int],
+    ) -> None:
+        values = list(pieces)
+
+        # A full-length 0/1 sequence is a bitfield.
+        if (
+            len(values) == self.piece_count
+            and all(
+                value in (0, 1, False, True)
+                for value in values
+            )
+        ):
+            self.update_availability(peer_id, values)
+            return
+
+        piece_set = self._validate_piece_indices(values)
+
+        with self._lock:
+            self._peer_pieces[peer_id] = piece_set
+            self._recalculate_availability()
+
+    def add_peer(
+        self,
+        peer_id: str,
+        pieces: Optional[Iterable[int]] = None,
+    ) -> None:
+        with self._lock:
+            if pieces is None:
+                self._peer_pieces.setdefault(peer_id, set())
+
+            else:
+                values = list(pieces)
+
+                if (
+                    len(values) == self.piece_count
+                    and all(
+                        value in (0, 1, False, True)
+                        for value in values
+                    )
+                ):
+                    self._peer_pieces[peer_id] = (
+                        self._bitfield_to_set(values)
+                    )
+                else:
+                    self._peer_pieces[peer_id] = (
+                        self._validate_piece_indices(values)
+                    )
+
+            self._recalculate_availability()
+
+    def remove_peer(self, peer_id: str) -> None:
+        with self._lock:
+            self._peer_pieces.pop(peer_id, None)
+            self._recalculate_availability()
+
+    def peer_disconnected(
+        self,
+        peer_id: str,
+        bits: Optional[Iterable[int]] = None,
+    ) -> None:
+        # `bits` is retained for compatibility with the older API.
+        # The stored peer snapshot is authoritative.
+        with self._lock:
+            self._peer_pieces.pop(peer_id, None)
+            self._recalculate_availability()
+
+    # ================================================================
+    # HAVE handling
+    # ================================================================
+
+    def peer_has_piece(
+        self,
+        peer_id: str,
+        piece_index: int,
+    ) -> bool:
+        self._validate_piece_index(piece_index)
+
+        with self._lock:
+            if peer_id not in self._peer_pieces:
+                raise ValueError(
+                    "HAVE requires an initial neighbor snapshot"
+                )
+
+            pieces = self._peer_pieces[peer_id]
+
+            # Duplicate HAVE is idempotent.
+            if piece_index in pieces:
+                return True
+
+            pieces.add(piece_index)
+            self._availability[piece_index] += 1
+
+            return True
+
+    def add_peer_piece(
+        self,
+        peer_id: str,
+        piece_index: int,
+    ) -> None:
+        self.peer_has_piece(peer_id, piece_index)
+
+    def remove_peer_piece(
+        self,
+        peer_id: str,
+        piece_index: int,
+    ) -> None:
+        self._validate_piece_index(piece_index)
+
+        with self._lock:
+            pieces = self._peer_pieces.get(peer_id)
+
+            if pieces is None:
+                return
+
+            if piece_index in pieces:
+                pieces.remove(piece_index)
+
+                self._availability[piece_index] = max(
+                    0,
+                    self._availability[piece_index] - 1,
+                )
+
+    def peers_for_piece(
+        self,
+        piece_index: int,
+    ) -> Set[str]:
+        self._validate_piece_index(piece_index)
+
+        with self._lock:
+            return {
+                peer_id
+                for peer_id, pieces in self._peer_pieces.items()
+                if piece_index in pieces
+            }
+
+    # ================================================================
+    # Local pieces
+    # ================================================================
+
+    def add_local_piece(self, piece_index: int) -> None:
+        self._validate_piece_index(piece_index)
+
+        with self._lock:
+            self._local_pieces.add(piece_index)
+            self._reserved.discard(piece_index)
+
+    def remove_local_piece(self, piece_index: int) -> None:
+        self._validate_piece_index(piece_index)
+
+        with self._lock:
+            self._local_pieces.discard(piece_index)
+
+    def piece_completed(self, piece_index: int) -> None:
+        self.add_local_piece(piece_index)
+
+    # ================================================================
+    # Reservation
+    # ================================================================
+
+    def reserve(self, piece_index: int) -> bool:
+        self._validate_piece_index(piece_index)
+
+        with self._lock:
+            if piece_index in self._local_pieces:
+                return False
+
+            if piece_index in self._reserved:
+                return False
+
+            self._reserved.add(piece_index)
+            return True
+
+    def release(self, piece_index: int) -> bool:
+        self._validate_piece_index(piece_index)
+
+        with self._lock:
+            if piece_index not in self._reserved:
+                return False
+
+            self._reserved.remove(piece_index)
+            return True
+
+    def is_reserved(self, piece_index: int) -> bool:
+        self._validate_piece_index(piece_index)
+
+        with self._lock:
+            return piece_index in self._reserved
+
+    # ================================================================
+    # Stateful rarest-first
+    # ================================================================
+
+    def _available_candidates(self) -> list[int]:
+        return [
+            piece
+            for piece in range(self.piece_count)
+            if piece not in self._local_pieces
+            and piece not in self._reserved
+            and self._availability[piece] > 0
         ]
 
-    def update_availability(self, peer_id: str, bitfield: list[bool]) -> None:
-        """
-        Update availability counts when a new peer's bitfield is received.
+    def _choose_stateful_rarest(
+        self,
+        candidates: list[int],
+    ) -> Optional[int]:
+        if not candidates:
+            return None
 
-        Replace this neighbor's snapshot; repeated advertisements are idempotent.
+        minimum = min(
+            self._availability[piece]
+            for piece in candidates
+        )
 
-        Args:
-            peer_id: The peer whose bitfield was received.
-            bitfield: The peer's bitfield (list of bools).
-        """
-        self._check_bitfield(bitfield)
-        with self._lock:
-            self._peer_bitfields[peer_id] = list(bitfield)
-            self._recount()
+        rarest = [
+            piece
+            for piece in candidates
+            if self._availability[piece] == minimum
+        ]
 
-    def peer_has_piece(self, peer_id: str, piece_index: int) -> None:
-        """
-        Update availability when a HAVE message is received.
+        # Stateful/legacy picker behavior is deterministic:
+        # choose the smallest piece index on a tie.
+        return min(rarest)
 
-        Mark the piece in this known neighbor's snapshot, counting it once.
+    # ================================================================
+    # Compatibility picker
+    # ================================================================
 
-        Args:
-            peer_id: The peer that sent the HAVE.
-            piece_index: The piece they now have.
-        """
-        if type(piece_index) is not int or not 0 <= piece_index < self.num_pieces:
-            raise ValueError("piece index is out of range")
-        with self._lock:
-            if peer_id not in self._peer_bitfields:
-                raise ValueError("HAVE requires a known neighbor bitfield")
-            self._peer_bitfields[peer_id][piece_index] = 1
-            self._recount()
+    def _pick_from_bitfields(
+        self,
+        owned,
+        remote,
+        reserved=None,
+    ) -> Optional[int]:
 
-    def peer_disconnected(self, peer_id: str, bitfield: list[bool]) -> None:
-        """
-        Update availability when a peer disconnects.
+        owned_bits = self._validate_bitfield(owned)
+        remote_bits = self._validate_bitfield(remote)
 
-        Remove the stored snapshot once; repeated disconnects are harmless.
+        if reserved is None:
+            reserved_set: Set[int] = set()
+        else:
+            reserved_set = self._validate_piece_indices(reserved)
 
-        Args:
-            peer_id: The peer that disconnected.
-            bitfield: Legacy caller snapshot; the stored snapshot is authoritative.
-        """
-        with self._lock:
-            self._peer_bitfields.pop(peer_id, None)
-            self._recount()
+        candidates = []
 
-    def pick_piece(self, my_bitfield: list[bool], peer_bitfield: list[bool],
-                   requested_pieces: set[int] | None = None) -> int | None:
-        """
-        Select the next piece to request using rarest-first.
+        for piece in range(self.piece_count):
 
-        Algorithm:
-        1. Find candidate pieces: I don't have AND peer has AND not requested
-        2. Among candidates, find the one with minimum availability
-        3. If tie, choose randomly
-        4. Return the piece index, or None if no valid candidate
+            if owned_bits[piece] == 1:
+                continue
 
-        Args:
-            my_bitfield: My current piece ownership.
-            peer_bitfield: The specific peer's piece ownership.
-            requested_pieces: Set of piece indices already being requested.
+            if remote_bits[piece] == 0:
+                continue
 
-        Returns:
-            Index of the piece to request, or None if nothing available.
-        """
-        self._check_bitfield(my_bitfield)
-        self._check_bitfield(peer_bitfield)
-        reserved = requested_pieces if requested_pieces is not None else set()
-        with self._lock:
-            candidates = [
-                index for index in range(self.num_pieces)
-                if not my_bitfield[index] and peer_bitfield[index]
-                and index not in reserved and self.availability[index] > 0
+            if piece in reserved_set:
+                continue
+
+            candidates.append(piece)
+
+        if not candidates:
+            return None
+
+        # If the supplied remote peer is not part of our registered
+        # neighbor state, the explicit remote bitfield is still enough
+        # to make these pieces eligible.
+        #
+        # If availability information exists, use it for rarest-first.
+        known = [
+            piece
+            for piece in candidates
+            if self._availability[piece] > 0
+        ]
+
+        if known:
+            minimum = min(
+                self._availability[piece]
+                for piece in known
+            )
+
+            rarest = [
+                piece
+                for piece in known
+                if self._availability[piece] == minimum
             ]
-            if not candidates:
-                return None
-            minimum = min(self.availability[index] for index in candidates)
-            return random.choice([
-                index for index in candidates
-                if self.availability[index] == minimum
-            ])
 
-    def get_availability(self) -> list[int]:
-        """Return a copy of the current availability counts (for debugging)."""
+            # A remote bitfield may contain a piece whose global
+            # availability is zero only because that source was supplied
+            # directly by the caller. Those pieces remain valid, but a
+            # known rarest piece takes priority when availability exists.
+            candidates = rarest
+
+        else:
+            candidates = candidates
+
+        # Compatibility contract uses random tie-breaking.
+        return random.choice(candidates)
+
+    # ================================================================
+    # Main picker
+    # ================================================================
+
+    def pick_piece(
+        self,
+        owned=None,
+        remote=None,
+        reserved=None,
+    ) -> Optional[int]:
+
         with self._lock:
-            return self.availability.copy()
+
+            # Compatibility API.
+            if owned is not None or remote is not None:
+
+                if owned is None or remote is None:
+                    raise TypeError(
+                        "owned and remote must be provided together"
+                    )
+
+                return self._pick_from_bitfields(
+                    owned,
+                    remote,
+                    reserved,
+                )
+
+            # Stateful API.
+            candidates = self._available_candidates()
+
+            selected = self._choose_stateful_rarest(candidates)
+
+            if selected is None:
+                return None
+
+            self._reserved.add(selected)
+
+            return selected
+
+    def pick_pieces(
+        self,
+        count: int,
+    ) -> list[int]:
+
+        if isinstance(count, bool) or not isinstance(count, int):
+            raise ValueError("count must be an integer")
+
+        if count < 0:
+            raise ValueError("count must be non-negative")
+
+        result = []
+
+        with self._lock:
+            for _ in range(count):
+                piece = self.pick_piece()
+
+                if piece is None:
+                    break
+
+                result.append(piece)
+
+        return result
+
+    # ================================================================
+    # Clear/reset
+    # ================================================================
+
+    def clear(self) -> None:
+        """
+        Clear peer availability and reservations.
+
+        Local pieces are preserved.
+        """
+        with self._lock:
+            self._peer_pieces.clear()
+            self._reserved.clear()
+            self._availability = [0] * self.piece_count
+
+    def reset(self) -> None:
+        """
+        Clear all picker state including local pieces.
+        """
+        with self._lock:
+            self._peer_pieces.clear()
+            self._reserved.clear()
+            self._local_pieces.clear()
+            self._availability = [0] * self.piece_count
+
+    # ================================================================
+    # Miscellaneous
+    # ================================================================
+
+    def __len__(self) -> int:
+        return self.piece_count

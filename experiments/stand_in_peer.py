@@ -58,6 +58,8 @@ def main(argv=None) -> int:
 
     signal.signal(signal.SIGTERM, _on_term)
     signal.signal(signal.SIGINT, _on_term)
+    if hasattr(signal, "SIGBREAK"):
+        signal.signal(signal.SIGBREAK, _on_term)
 
     metadata, file_id = load_metadata(args.metadata)
     total = metadata.num_pieces

@@ -301,8 +301,18 @@ class Run:
         child.files = [out, err]
         child.launch_mono = time.monotonic()
         # Argument list, no shell. Output goes to files so pipes never fill.
-        child.process = subprocess.Popen(child.command, cwd=REPO_ROOT, env=env,
-                                         stdin=subprocess.DEVNULL, stdout=out, stderr=err)
+        creationflags = (
+            subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
+        )
+        child.process = subprocess.Popen(
+            child.command,
+            cwd=REPO_ROOT,
+            env=env,
+            stdin=subprocess.DEVNULL,
+            stdout=out,
+            stderr=err,
+            creationflags=creationflags,
+        )
 
     def _wait_ready(self, child: Child, event_name: str) -> None:
         deadline = time.monotonic() + self.config["ready_timeout_s"]
@@ -376,27 +386,55 @@ class Run:
 
     # ---- teardown ----
 
+    
     def _stop_all(self) -> None:
-        # Peers first (so their best-effort "stopped" announce can reach the
-        # tracker), tracker last. Only processes this run started are touched.
+        """Gracefully stop peers before the tracker, with forced cleanup as fallback."""
+        import signal
+
         peers = [ch for ch in self.children if ch.role != "tracker"]
         trackers = [ch for ch in self.children if ch.role == "tracker"]
+
         for group in (peers, trackers):
-            alive = [ch for ch in group if ch.process is not None and ch.process.poll() is None]
-            for child in alive:
-                child.process.terminate()
-            deadline = time.monotonic() + STOP_GRACE_S
+            alive = [
+                ch for ch in group
+                if ch.process is not None and ch.process.poll() is None
+            ]
+
+            # Give each process a chance to perform normal shutdown.
             for child in alive:
                 try:
-                    child.process.wait(max(0.1, deadline - time.monotonic()))
+                    if os.name == "nt":
+                        child.process.send_signal(signal.CTRL_BREAK_EVENT)
+                    else:
+                        child.process.terminate()
+                except (OSError, ValueError):
+                    pass
+
+            deadline = time.monotonic() + STOP_GRACE_S
+
+            for child in alive:
+                if child.process.poll() is not None:
+                    continue
+
+                try:
+                    child.process.wait(
+                        timeout=max(0.1, deadline - time.monotonic())
+                    )
                 except subprocess.TimeoutExpired:
-                    child.process.kill()
-                    child.process.wait(5)
+                    child.process.terminate()
+                    try:
+                        child.process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        child.process.kill()
+                        child.process.wait(timeout=5)
+
         for child in self.children:
             if child.process is not None and child.exit_code is None:
                 child.exit_code = child.process.returncode
+
             for handle in child.files:
                 handle.close()
+
             child.poll_events()
 
     def _check_outputs(self) -> dict:
