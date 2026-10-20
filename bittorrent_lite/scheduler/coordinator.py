@@ -1,5 +1,6 @@
 """Single-owner scheduler combining request accounting and recovery policy."""
 import random
+from collections import deque
 from typing import Optional
 
 from request_pipeline import PipelineManager, RequestKey
@@ -40,9 +41,11 @@ class Coordinator:
         self._neighbors: dict[int, NeighborState] = {}
         self._storage_error = None
         self._complete = False
+        self._stopped = False
+        self._verified_bytes = 0
         self._recovery_error = None
-        self._invalid_pieces = []
-        self._problems = []
+        self._invalid_pieces = deque(maxlen=128)
+        self._problems = deque(maxlen=128)
         self._handlers = {
             ev.ConnectionReady: self._on_ready,
             ev.BitfieldReceived: self._on_bitfield,
@@ -61,6 +64,8 @@ class Coordinator:
         }
 
     def handle_event(self, event) -> None:
+        if self._stopped:
+            return
         handler = self._handlers.get(type(event))
         if handler is None:
             raise TypeError(f"unknown event type {type(event).__name__}")
@@ -132,6 +137,8 @@ class Coordinator:
         return 0
 
     def schedule(self) -> int:
+        if self._stopped:
+            return 0
         orders = {}
         availability = self._picker.availability_snapshot()
         for cid, n in self._neighbors.items():
@@ -233,6 +240,8 @@ class Coordinator:
         return issued
 
     def tick(self) -> list[ev.ExpiredRequest]:
+        if self._stopped:
+            return []
         outcomes = self._pipeline.expire(now=self._clock.now())
         for o in outcomes:
             self._record_failure(o.key, o.reason)
@@ -249,6 +258,9 @@ class Coordinator:
             "owned": len(pipeline["owned"]), "total": self._n,
             "ready_to_assemble": len(pipeline["owned"]) == self._n,
             "complete": self._complete,
+            "stopped": self._stopped,
+            "verified_download_bytes": self._verified_bytes,
+            "local_bitfield": list(self._local),
             "stalled": any(not self._local[i] and not count
                            for i, count in enumerate(self._picker.availability_snapshot())),
             "piece_states": pipeline["piece_state_counts"],
@@ -281,6 +293,8 @@ class Coordinator:
         Keep the coordinator alive afterward to serve verified pieces. Assembly
         is synchronous for the bounded file size in the original project plan.
         """
+        if self._stopped:
+            raise RuntimeError("coordinator is stopped")
         if self._complete:
             return True
         if not all(self._local):
@@ -298,6 +312,17 @@ class Coordinator:
         if self.uploads is not None:
             self.uploads.set_seeder(True)
         return True
+
+    def shutdown(self):
+        """Stop admission before cleanup; late events cannot restart scheduling."""
+        if self._stopped:
+            return
+        self._stopped = True
+        for cid, neighbor in list(self._neighbors.items()):
+            if neighbor.active:
+                self._on_disconnected(ev.Disconnected(cid))
+        if self.uploads is not None:
+            self.uploads.shutdown(wait=False)
 
     def resume_after_storage_error(self) -> None:
         self._storage_error = None
@@ -427,6 +452,7 @@ class Coordinator:
             if o.kind == "canceled":
                 self._cancel_wire(o.key)
         self._local[e.piece_index] = True
+        self._verified_bytes += len(e.data)
         if self.uploads is not None:
             self.uploads.contribution(e.connection_id, len(e.data))
         for n in self._neighbors.values():

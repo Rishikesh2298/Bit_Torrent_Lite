@@ -47,9 +47,12 @@ class SchedulerBridge:
         self._closed = set()
         self._dead_ids = set()
         self._lock = threading.RLock()
+        self._stopping = False
 
     def register(self, connection_id, peer_id, send, *, withdraw=None, close=None):
         """Owner-thread operation; IDs cannot be reused after disconnect."""
+        if self._stopping:
+            raise RuntimeError("bridge is stopped")
         if connection_id in self._used_ids:
             raise ValueError("connection ID already used")
         self._used_ids.add(connection_id)
@@ -59,6 +62,8 @@ class SchedulerBridge:
         self.publish(ev.ConnectionReady(connection_id, peer_id))
 
     def publish(self, event):
+        if self._stopping:
+            return False
         try:
             self.events.put_nowait(event)
             return True
@@ -102,7 +107,7 @@ class SchedulerBridge:
             raise
 
     def _send(self, connection_id, message):
-        if connection_id in self._closed:
+        if self._stopping or connection_id in self._closed:
             return False
         send = self._senders.get(connection_id)
         if send is None:
@@ -210,3 +215,21 @@ class SchedulerBridge:
             for key in list(self._requests):
                 if key[0] == cid:
                     del self._requests[key]
+
+    def shutdown(self):
+        """Close all registered sessions, attempting every closer even on error."""
+        self._stopping = True
+        errors = []
+        for cid in list(self._senders):
+            try:
+                self.close_connection(cid, "shutdown")
+            except Exception as exc:
+                errors.append(f"{cid}: {type(exc).__name__}: {exc}")
+            finally:
+                self._forget_connection(cid)
+        while True:
+            try:
+                self.events.get_nowait()
+            except Empty:
+                break
+        return errors

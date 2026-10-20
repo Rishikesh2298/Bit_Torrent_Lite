@@ -1,7 +1,7 @@
 # Post-merge dynamic end-to-end testing
 
 Run after the team integrates the tracker, transport and peer runtime into main.
-The current 453 passing tests validate modules and simulated transport boundaries;
+The current 495 passing tests validate modules, runtime and simulated transport boundaries;
 they are not evidence of real-network acceptance. Do not merge automatically.
 
 ## Entry checks

@@ -71,9 +71,9 @@ if state["ready_to_assemble"] and not state["complete"] and not state["storage_e
     coordinator.finalize_download(output_path)
 ```
 
-Run timer work even with no events, using bounded waits around 100 ms. The future
-runtime owns listeners, discovery, process shutdown, completion logging and
-continued seeding. Storage errors must be explicitly resolved before retry.
+The [injected runtime](peer-runtime-handoff.md) now performs this owner loop,
+completion logging, continued seeding and shutdown coordination. Its backend
+owns listeners and discovery I/O. Storage errors require explicit resolution.
 
 ## Verification and remaining boundaries
 
@@ -86,7 +86,7 @@ behavior, bounded-event failure, queued/started withdrawal, malformed/reused
 requests, stalled state and assembly-before-completion.
 
 The HTTP tracker, tracker client, TCP framing/connection threads, handshake
-state machine and executable peer runtime remain separate integration work.
+state machine and production backend adapter remain separate integration work.
 No real-socket or six-peer acceptance gate is claimed. Tracker swarm indexing
 and expiry, common protocol-header validation and the obsolete binary protocol
 document belong to that shared/team handoff; this change does not rewrite them.

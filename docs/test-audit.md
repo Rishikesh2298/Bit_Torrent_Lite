@@ -1,6 +1,10 @@
 # Former placeholder tests
 
-Latest original-plan alignment verification: **453 passed, 0 failed, 0 skipped**
+Latest independent-runtime validation: **495 passed, 0 failed, 0 skipped**,
+with warnings treated as errors. See [runtime handoff](peer-runtime-handoff.md)
+for the added lifecycle coverage and remaining real-network dependencies.
+
+Earlier original-plan alignment verification: **453 passed, 0 failed, 0 skipped**
 with warnings treated as errors. See [alignment review](original-plan-alignment.md)
 for changed contracts, new regression coverage and remaining network boundaries.
 The expanded-audit results below describe the preceding implementation.

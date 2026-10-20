@@ -51,6 +51,11 @@ September individual/master plans and aligned project scheduling, request IDs,
 CHOKE behavior, timer recovery, upload selection, cancellation hooks, event bounds
 and final-assembly status. Original-plan regressions and handoff documentation
 were added; standalone optional behaviors remain separate from project defaults.
+On request, the assistant completed independent owner-loop orchestration, CLI
+configuration, metrics/status, discovery/session handoffs and bounded shutdown,
+removed the unused choking scaffold, and tested the runtime with simulated
+backends and real disk storage. Real socket/tracker integration remains a team
+handoff; no real-network acceptance result is claimed.
 
 ## Earlier project assistance
 

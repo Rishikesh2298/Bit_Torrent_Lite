@@ -69,8 +69,10 @@ python -m bittorrent_lite.scripts.generate_metadata --file path/to/file --output
 
 ### 2. Start Tracker
 
-Steps 2–4 describe the planned interface. The tracker, transport and peer loop
-are currently stubs; end-to-end network transfers are not operational yet.
+Steps 2–4 describe the planned network interface. The tracker and transport
+remain unfinished. The runtime and CLI controls are implemented but require
+the team backend adapter; real-network transfers are not operational yet.
+See [runtime handoff](docs/peer-runtime-handoff.md).
 
 ```bash
 python -m bittorrent_lite.tracker.tracker_server --port 8000
@@ -119,7 +121,8 @@ See [original-plan alignment](docs/original-plan-alignment.md) for current
 behavior, transport handoff requirements, and remaining team integration.
 Run `python -m examples.scheduler_demo` for the single-request example.
 See [scheduler integration](docs/scheduler.md) for protocol/storage adapters,
-interfaces, limitations, and test coverage. The peer CLI is still a stub.
+interfaces, limitations, and test coverage. The CLI supports `--check-config`,
+strategy/window/seed/free-rider controls and an injected backend factory.
 
 Run `python -m pytest` from the repository root after installing dependencies.
 Tests cover the implemented file manager, metadata CLI, message objects,
