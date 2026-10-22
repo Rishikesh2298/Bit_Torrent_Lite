@@ -1,119 +1,300 @@
 """
-Request Manager — Prabhat's Module
+Request manager for BitTorrent-Lite.
 
-Tracks outstanding piece requests to prevent duplicates,
-enforce pipelining limits, and detect timeouts.
+Maintains a pipelined set of outstanding piece requests.
 
-Concept:
-    When a peer sends a REQUEST for piece 7 to peer-003:
-    - Record: {piece_index=7, peer_id="peer-003", timestamp=now()}
-    - This prevents requesting piece 7 from another peer simultaneously
-    - If peer-003 doesn't respond within REQUEST_TIMEOUT, the request
-      can be cancelled and re-issued to a different peer
+Version 1 requirement:
+    Maximum pipeline window = 4 requests.
 
-Pipelining:
-    Initially: MAX_OUTSTANDING_REQUESTS = 1 (one request at a time)
-    Later:     MAX_OUTSTANDING_REQUESTS = 5 (5 concurrent requests)
+The RequestManager does not:
+- read TCP data
+- parse protocol frames
+- choose pieces using rarest-first
 
-Interface:
-    RequestManager.add_request(piece_index, peer_id) -> bool
-    RequestManager.complete_request(piece_index) -> None
-    RequestManager.cancel_request(piece_index) -> None
-    RequestManager.get_timed_out_requests(timeout) -> list[int]
-    RequestManager.is_requested(piece_index) -> bool
-    RequestManager.can_request_more() -> bool
-    RequestManager.outstanding_count() -> int
+It only manages outstanding requests and determines
+when another request may be issued.
 """
 
-import threading
-import time
+from __future__ import annotations
 
-from bittorrent_lite.config import MAX_OUTSTANDING_REQUESTS, REQUEST_TIMEOUT
+import threading
+from typing import Optional
+
+from bittorrent_lite.protocol.messages import (
+    Piece,
+    Reject,
+    Request,
+)
+
+
+DEFAULT_PIPELINE_WINDOW = 4
 
 
 class RequestManager:
     """
-    Tracks outstanding piece requests with timeout detection.
+    Manage outstanding piece requests.
 
-    Thread-safe: multiple connection threads may check/modify requests.
+    Each request is identified by request_id.
+
+    A request remains outstanding until the corresponding
+    PIECE or REJECT is received.
     """
 
-    def __init__(self, max_outstanding: int = MAX_OUTSTANDING_REQUESTS):
-        """
-        Initialize request manager.
+    def __init__(
+        self,
+        pipeline_window: int = DEFAULT_PIPELINE_WINDOW,
+    ):
+        if not isinstance(
+            pipeline_window,
+            int,
+        ):
+            raise TypeError(
+                "pipeline_window must be an integer"
+            )
 
-        Args:
-            max_outstanding: Maximum concurrent outstanding requests.
-        """
-        self.max_outstanding = max_outstanding
-        # piece_index -> {"peer_id": str, "timestamp": float}
-        self._requests: dict[int, dict] = {}
-        self._lock = threading.Lock()
+        if pipeline_window <= 0:
+            raise ValueError(
+                "pipeline_window must be greater than 0"
+            )
 
-    def add_request(self, piece_index: int, peer_id: str) -> bool:
-        """
-        Record a new outstanding request.
+        self.pipeline_window = pipeline_window
 
-        Args:
-            piece_index: The piece being requested.
-            peer_id: The peer the request was sent to.
+        self._next_request_id = 1
+
+        self._outstanding: dict[
+            int,
+            int,
+        ] = {}
+
+        self._completed: set[int] = set()
+
+        self._rejected: set[int] = set()
+
+        self._lock = threading.RLock()
+
+    # ================================================================
+    # Request creation
+    # ================================================================
+
+    def create_request(
+        self,
+        piece_index: int,
+    ) -> Optional[Request]:
+        """
+        Create a new REQUEST if the pipeline has space.
 
         Returns:
-            True if the request was recorded, False if already requested
-            or at the pipelining limit.
+            Request if a slot is available.
+            None if the pipeline is full.
         """
-        # TODO: Prabhat — implement this
-        raise NotImplementedError
 
-    def complete_request(self, piece_index: int) -> None:
+        if not isinstance(
+            piece_index,
+            int,
+        ):
+            raise TypeError(
+                "piece_index must be an integer"
+            )
+
+        if piece_index < 0:
+            raise ValueError(
+                "piece_index cannot be negative"
+            )
+
+        with self._lock:
+
+            if (
+                len(self._outstanding)
+                >= self.pipeline_window
+            ):
+                return None
+
+            request_id = (
+                self._next_request_id
+            )
+
+            self._next_request_id += 1
+
+            self._outstanding[
+                request_id
+            ] = piece_index
+
+            return Request(
+                request_id=request_id,
+                piece_index=piece_index,
+            )
+
+    # ================================================================
+    # Completion
+    # ================================================================
+
+    def handle_piece(
+        self,
+        piece: Piece,
+    ) -> bool:
         """
-        Remove a request after successfully receiving the piece.
+        Mark a request as completed.
 
-        Args:
-            piece_index: The piece that was received.
+        Returns True if the PIECE matched an
+        outstanding request.
         """
-        # TODO: Prabhat — implement this
-        raise NotImplementedError
 
-    def cancel_request(self, piece_index: int) -> None:
+        with self._lock:
+
+            request_id = (
+                piece.request_id
+            )
+
+            if request_id not in self._outstanding:
+                return False
+
+            expected_piece = (
+                self._outstanding[
+                    request_id
+                ]
+            )
+
+            if (
+                expected_piece
+                != piece.piece_index
+            ):
+                return False
+
+            del self._outstanding[
+                request_id
+            ]
+
+            self._completed.add(
+                request_id
+            )
+
+            return True
+
+    # ================================================================
+    # Rejection
+    # ================================================================
+
+    def handle_reject(
+        self,
+        reject: Reject,
+    ) -> bool:
         """
-        Cancel an outstanding request (timeout, peer disconnect, etc.).
+        Remove a rejected request from
+        the outstanding pipeline.
 
-        Args:
-            piece_index: The piece request to cancel.
+        Returns True if the request was
+        actually outstanding.
         """
-        # TODO: Prabhat — implement this
-        raise NotImplementedError
 
-    def get_timed_out_requests(self, timeout_seconds: float = REQUEST_TIMEOUT) -> list[int]:
-        """
-        Find requests that have been outstanding longer than the timeout.
+        with self._lock:
 
-        Args:
-            timeout_seconds: Max seconds before a request is considered timed out.
+            request_id = (
+                reject.request_id
+            )
 
-        Returns:
-            List of piece indices with timed-out requests.
-        """
-        # TODO: Prabhat — implement this
-        raise NotImplementedError
+            if request_id not in self._outstanding:
+                return False
 
-    def is_requested(self, piece_index: int) -> bool:
-        """Check if a piece is currently being requested."""
-        # TODO: Prabhat — implement this
-        raise NotImplementedError
+            del self._outstanding[
+                request_id
+            ]
 
-    def can_request_more(self) -> bool:
-        """Check if we're below the pipelining limit."""
-        # TODO: Prabhat — implement this
-        raise NotImplementedError
+            self._rejected.add(
+                request_id
+            )
 
+            return True
+
+    # ================================================================
+    # Queries
+    # ================================================================
+
+    @property
     def outstanding_count(self) -> int:
-        """Return the number of currently outstanding requests."""
-        # TODO: Prabhat — implement this
-        raise NotImplementedError
+        with self._lock:
+            return len(
+                self._outstanding
+            )
 
-    def get_request_peer(self, piece_index: int) -> str | None:
-        """Return the peer_id a piece was requested from, or None."""
-        # TODO: Prabhat — implement this
-        raise NotImplementedError
+    @property
+    def available_slots(self) -> int:
+        with self._lock:
+            return (
+                self.pipeline_window
+                - len(
+                    self._outstanding
+                )
+            )
+
+    @property
+    def completed_count(self) -> int:
+        with self._lock:
+            return len(
+                self._completed
+            )
+
+    @property
+    def rejected_count(self) -> int:
+        with self._lock:
+            return len(
+                self._rejected
+            )
+
+    def is_outstanding(
+        self,
+        request_id: int,
+    ) -> bool:
+        with self._lock:
+            return (
+                request_id
+                in self._outstanding
+            )
+
+    def piece_for_request(
+        self,
+        request_id: int,
+    ) -> Optional[int]:
+        with self._lock:
+            return self._outstanding.get(
+                request_id
+            )
+
+    def outstanding_requests(
+        self,
+    ) -> dict[int, int]:
+        """
+        Return a snapshot of outstanding
+        request_id -> piece_index.
+        """
+
+        with self._lock:
+            return dict(
+                self._outstanding
+            )
+
+    # ================================================================
+    # Reset / clear
+    # ================================================================
+
+    def clear(self) -> None:
+        """
+        Clear all outstanding requests.
+        """
+
+        with self._lock:
+            self._outstanding.clear()
+
+    def reset(self) -> None:
+        """
+        Reset request state.
+        """
+
+        with self._lock:
+
+            self._next_request_id = 1
+
+            self._outstanding.clear()
+
+            self._completed.clear()
+
+            self._rejected.clear()
