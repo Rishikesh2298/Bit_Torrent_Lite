@@ -1,0 +1,185 @@
+{
+  "status": "PREPARE_STATIC_MAPPING_NOT_COLLECTED_OR_RUN_BY_AUTHOR",
+  "source_sha256": "f4d2abd4e7250fe3c6e25122c29b9beafae69b68d28412d498032fb5e6ead8a0",
+  "expected_cases": 29,
+  "unit_cases": 21,
+  "integration_cases": 8,
+  "cases": [
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_unit_three_distinct_coalesced_frames_preserve_order_and_boundaries",
+      "phase": "unit",
+      "requirements": [
+        "A-T03",
+        "N02"
+      ],
+      "evidence_kind": "controlled_socket_unit",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index"
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_socketpair_three_distinct_coalesced_frames_preserve_order",
+      "phase": "integration",
+      "requirements": [
+        "A-T03",
+        "N02"
+      ],
+      "evidence_kind": "actual_socketpair",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index"
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_unit_receiver_rejects_header_length_before_any_header_read",
+      "phase": "unit",
+      "requirements": [
+        "A-T05",
+        "N03"
+      ],
+      "evidence_kind": "controlled_socket_unit",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index",
+      "parameters": [
+        "zero",
+        "limit-plus-one",
+        "uint32-max"
+      ]
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_unit_receiver_rejects_invalid_payload_length_before_payload_read",
+      "phase": "unit",
+      "requirements": [
+        "A-T06",
+        "N03"
+      ],
+      "evidence_kind": "controlled_socket_unit",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index",
+      "parameters": [
+        "negative",
+        "true",
+        "false",
+        "float",
+        "string",
+        "null",
+        "oversize"
+      ]
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_unit_partial_eof_never_delivers_frame_and_connection_closes_once",
+      "phase": "unit",
+      "requirements": [
+        "A-T10"
+      ],
+      "evidence_kind": "controlled_socket_unit",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index",
+      "parameters": [
+        "prefix-1",
+        "prefix-2",
+        "prefix-3",
+        "header-empty",
+        "header-1",
+        "header-last-byte",
+        "payload-empty",
+        "payload-last-byte"
+      ]
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_unit_pure_idle_polls_do_not_close_or_consume_the_next_frame",
+      "phase": "unit",
+      "requirements": [
+        "A-T11"
+      ],
+      "evidence_kind": "controlled_socket_unit",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index"
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_socketpair_idle_polls_keep_session_open_until_a_valid_frame_arrives",
+      "phase": "integration",
+      "requirements": [
+        "A-T11"
+      ],
+      "evidence_kind": "actual_socketpair",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index"
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_socketpair_frame_deadline_closes_transport_without_external_cleanup",
+      "phase": "integration",
+      "requirements": [
+        "A-T12"
+      ],
+      "evidence_kind": "actual_socketpair",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index"
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_socketpair_repeated_initial_bitfield_closes_after_one_ready_notification",
+      "phase": "integration",
+      "requirements": [
+        "A-T09"
+      ],
+      "evidence_kind": "actual_socketpair",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index"
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_unit_partial_send_is_attempted_once_and_never_replays_or_sends_next_frame",
+      "phase": "unit",
+      "requirements": [
+        "A-T16",
+        "N05"
+      ],
+      "evidence_kind": "controlled_socket_unit",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index"
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_socketpair_cancel_before_writer_sends_zero_piece_bytes_and_next_frame_is_valid",
+      "phase": "integration",
+      "requirements": [
+        "A-T14",
+        "C01"
+      ],
+      "evidence_kind": "actual_socketpair",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index"
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_unit_started_cancel_finishes_frame_then_valid_next_frame_and_late_piece_is_ignored",
+      "phase": "integration",
+      "requirements": [
+        "A-T15"
+      ],
+      "evidence_kind": "controlled_socket_and_real_components",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index"
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_socketpair_concurrent_producers_emit_only_complete_ordered_frames",
+      "phase": "integration",
+      "requirements": [
+        "A-T13"
+      ],
+      "evidence_kind": "actual_socketpair",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index"
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_wire_remaining_contracts.py::test_unit_concurrent_reader_writer_failures_notify_and_release_reservations_once",
+      "phase": "integration",
+      "requirements": [
+        "A-T17",
+        "P-T13"
+      ],
+      "evidence_kind": "controlled_socket_and_real_components",
+      "acceptance_status": "NOT_RUN",
+      "assertion_source_index": "bittorrent_lite/docs/integration/original-requirements-reviewed.json#procedure_assertion_index"
+    }
+  ],
+  "remaining_gaps": [
+    "C02 remains partial: started upload CANCEL and mock stream are composed, but the separate receiver stale-piece oracle revokes via CHOKE; actual outgoing cancellation and late bytes on the same session are not yet composed.",
+    "Actual socketpair checks do not establish independent processes, LAN, fresh challenge, measured experiment or stress evidence.",
+    "Injected established states or deadlines are explicit test preconditions; only repeated-BITFIELD case executes a full handshake."
+  ]
+}

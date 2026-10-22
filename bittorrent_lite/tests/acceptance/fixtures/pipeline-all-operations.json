@@ -1,0 +1,22 @@
+{
+  "num_pieces": 6,
+  "actions": [
+    {"op":"register_connection","connection_id":1,"provider_id":"A","now":0},
+    {"op":"set_available","connection_id":1,"piece_indices":[0,1,2,3,4,5],"now":0},
+    {"op":"set_permissions","connection_id":1,"interested":true,"unchoked":true,"now":0},
+    {"op":"reserve","connection_id":1,"piece_index":0,"now":0},
+    {"op":"confirm_sent","key":{"connection_id":1,"request_id":1,"piece_index":0},"sent_at":0,"now":0},
+    {"op":"start_verification","key":{"connection_id":1,"request_id":1,"piece_index":0},"now":0},
+    {"op":"finish_verification","key":{"connection_id":1,"request_id":1,"piece_index":0},"valid":true,"now":0},
+    {"op":"fill","candidate_orders":{"1":[1,2]},"now":0},
+    {"op":"reject","key":{"connection_id":1,"request_id":2,"piece_index":1},"now":0},
+    {"op":"send_failed","key":{"connection_id":1,"request_id":3,"piece_index":2},"reason":"diagnostic_send_failure","now":0},
+    {"op":"reserve","connection_id":1,"piece_index":3,"now":0},
+    {"op":"cancel","key":{"connection_id":1,"request_id":4,"piece_index":3},"reason":"operator_cancel","now":0},
+    {"op":"reserve","connection_id":1,"piece_index":4,"now":0},
+    {"op":"expire","now":5},
+    {"op":"reserve","connection_id":1,"piece_index":5,"now":5},
+    {"op":"disconnect","connection_id":1,"now":5},
+    {"op":"snapshot"}
+  ]
+}

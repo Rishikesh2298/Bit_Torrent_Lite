@@ -1,0 +1,18 @@
+
+== 1. neighbor registered
+
+== 2a. bitfield received (interest is announced, still choked)
+   out: ('INTERESTED', 1)
+
+== 2b/3. unchoked: one request enqueued
+   out: ('REQUEST', 1, 1, 0)
+   pending: {'connection_id': 1, 'request_id': 1, 'piece_index': 0, 'sent': False, 'verifying': False, 'deadline': None}
+
+== 4. send confirmed
+   pending: {'connection_id': 1, 'request_id': 1, 'piece_index': 0, 'sent': True, 'verifying': False, 'deadline': 10.1}
+
+== 5-7. piece verified and stored, HAVE advertised, next request enqueued
+   out: ('HAVE', 1, 0)
+   out: ('REQUEST', 1, 2, 2)
+   owned: 1 / 4 states: {'MISSING': 2, 'REQUESTED': 1, 'VERIFYING': 0, 'HAVE': 1}
+   pending: [{'connection_id': 1, 'request_id': 2, 'piece_index': 2, 'sent': False, 'verifying': False, 'deadline': None}]

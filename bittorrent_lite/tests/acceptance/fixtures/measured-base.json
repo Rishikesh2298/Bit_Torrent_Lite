@@ -1,0 +1,29 @@
+{
+  "L": 2,
+  "S": 1,
+  "strategy": "rarest",
+  "scenario": "baseline",
+  "piece_bytes": 65536,
+  "window": 4,
+  "upload_slots": 2,
+  "upload_cap": null,
+  "seed": 11,
+  "timeout_s": 300,
+  "ready_timeout_s": 15,
+  "launch_gap_s": 0.2,
+  "tracker_host": "127.0.0.1",
+  "tracker_port": 8000,
+  "base_port": 7001,
+  "failure_trigger_pct": 25,
+  "startup_method": "launch-sequence",
+  "environment": "localhost",
+  "synthetic": false,
+  "peer_command": [
+    "{python}", "-m", "bittorrent_lite.application.cli",
+    "--peer-id", "{peer_id}", "--port", "{port}",
+    "--tracker", "{tracker_url}", "--metadata", "{metadata}",
+    "--output-dir", "{downloads_dir}", "--stop-file", "{stop_file}",
+    "--window", "{window}", "--seed", "{seed}",
+    "--resource-metrics", "--upload-workers", "0"
+  ]
+}

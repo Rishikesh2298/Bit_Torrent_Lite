@@ -1,0 +1,33 @@
+{
+  "status": "PREPARE_STATIC_MAPPING_NOT_COLLECTED_OR_RUN_BY_AUTHOR",
+  "source_sha256": "3ba2b01e8fa6c84be03beb1435444d09c28fe86bb5c0357ace281d009149caef",
+  "expected_cases": 1,
+  "cases": [
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_guardian_crash.py::test_guardian_survives_live_supervisor_crash_and_cleans_registered_descendants",
+      "phase": "integration",
+      "requirements": [
+        "PREPARE process guardian survival after actual supervisor crash"
+      ],
+      "partial_requirement_support": [
+        "D-T10"
+      ],
+      "evidence_kind": "real finite process tree",
+      "expected_negative_exit": {
+        "role": "fixture-supervisor",
+        "exit_code": 17,
+        "predeclaration": "expected-crash.json is written before Popen; supervisor-crash.json records exact identity/time before os._exit(17)"
+      },
+      "ordinary_exit_oracle": "Guardian, worker and grandchild must exit zero on Windows using wait/query handles acquired while alive. POSIX unavailable non-child statuses remain null and provide no zero-exit credit.",
+      "raw_evidence": "Fresh guardian-crash-UUID under enclosing command directory when ACCEPTANCE_PROCESS_REGISTRY is present; tmp_path otherwise. Separate binary stdout/stderr for all four roles, identity registries, guardian JSONL/result, worker-result, actual observed exits and raw SHA256 manifest.",
+      "cleanup": "Bounded cooperative stop files; emergency cleanup only exact registered identities or exact owned Popen handles. All semantic assertions precede test-finally emergency cleanup. OS-created auxiliaries retain guardian-observed ancestry and must also be gone.",
+      "acceptance_status": "NOT_RUN",
+      "interpreter_selection": "Launch the OS-observed parent interpreter executable directly; preserve exact current psutil module path/hash via explicit child PYTHONPATH. No venv-redirector lifecycle credit."
+    }
+  ],
+  "remaining_gaps": [
+    "Original experiment launcher actual child-crash lifecycle remains a separate D-T10 obligation.",
+    "This process negative control is not acceptance execution, independent verification, application E2E or measured/stress evidence.",
+    "Non-Windows unavailable non-child wait statuses must remain unknown until separately observed."
+  ]
+}

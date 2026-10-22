@@ -1,0 +1,20 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.14, pytest-9.1.1, pluggy-1.7.0 -- C:\Users\KIIT\Documents\ChatGPT\cn project\BitTorrent\.validation\final-acceptance\preparation-20261022-01\environment\venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\KIIT\Documents\ChatGPT\cn project\BitTorrent
+configfile: pytest.ini
+plugins: timeout-2.4.0
+timeout: 180.0s
+timeout method: thread
+timeout func_only: False
+collecting ... collected 6 items
+
+bittorrent_lite/tests/end_to_end/test_failures.py::test_free_rider_stays_disabled_after_completion_and_no_false_complete PASSED [ 16%]
+bittorrent_lite/tests/end_to_end/test_failures.py::test_tracker_outage_does_not_stop_transfer_and_restart_admits_late_peer PASSED [ 33%]
+bittorrent_lite/tests/end_to_end/test_failures.py::test_killed_downloader_restarts_from_verified_pieces PASSED [ 50%]
+bittorrent_lite/tests/end_to_end/test_failures.py::test_malformed_client_does_not_damage_healthy_transfer PASSED [ 66%]
+bittorrent_lite/tests/end_to_end/test_failures.py::test_tracker_absent_at_start_recovers PASSED [ 83%]
+bittorrent_lite/tests/end_to_end/test_corruption.py::test_corrupt_payload_is_not_owned_or_announced_then_recovers_from_healthy_peer PASSED [100%]
+
+- generated xml file: C:\Users\KIIT\Documents\ChatGPT\cn project\BitTorrent\.validation\final-acceptance\preparation-20261022-01\diagnostics\076-junit.xml -
+======================== 6 passed in 89.17s (0:01:29) =========================

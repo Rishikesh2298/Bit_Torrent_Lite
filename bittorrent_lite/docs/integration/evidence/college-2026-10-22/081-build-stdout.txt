@@ -1,0 +1,9 @@
+Processing c:\users\kiit\documents\chatgpt\cn project\bittorrent\.validation\college-readiness-20261022\portable install with spaces ω rerun\relocated source ω\bittorrent
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: bittorrent-lite
+  Building wheel for bittorrent-lite (pyproject.toml): started
+  Building wheel for bittorrent-lite (pyproject.toml): finished with status 'done'
+  Created wheel for bittorrent-lite: filename=bittorrent_lite-0.1.0-py3-none-any.whl size=232461 sha256=03cb55ad9a7f60ae1dbaa3203c81e8d35b5c2497025110a8c50b97b22983e996
+  Stored in directory: C:\Users\KIIT\AppData\Local\Temp\pip-ephem-wheel-cache-46n9lkcc\wheels\f9\82\27\83be7003cf1ada71ab034d76d20e30d1888618340c48911d41
+Successfully built bittorrent-lite

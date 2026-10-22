@@ -1,0 +1,150 @@
+{
+  "status": "PREPARE_STATIC_MAPPING_NOT_COLLECTED_OR_RUN",
+  "scope": "Instrumentation regressions only. Fake sockets do not satisfy TCP acceptance.",
+  "expected_cases": 39,
+  "cases": [
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_runtime_telemetry.py::test_completed_write_records_exact_frame_not_enqueue",
+      "parameters": [
+        "HANDSHAKE",
+        "BITFIELD",
+        "HAVE",
+        "INTERESTED",
+        "NOT_INTERESTED",
+        "CHOKE",
+        "UNCHOKE",
+        "REQUEST",
+        "PIECE",
+        "CANCEL",
+        "REJECT"
+      ],
+      "phase": "unit",
+      "requirements": [
+        "PREPARE complete-message byte accounting",
+        "EV04",
+        "SC13"
+      ],
+      "oracle": "Independent frame construction equals bytes observed by fake sendall; no full-write event or scheduler acknowledgement at enqueue."
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_runtime_telemetry.py::test_complete_fragmented_read_records_actual_frame_bytes",
+      "parameters": [
+        "HANDSHAKE",
+        "BITFIELD",
+        "HAVE",
+        "INTERESTED",
+        "NOT_INTERESTED",
+        "CHOKE",
+        "UNCHOKE",
+        "REQUEST",
+        "PIECE",
+        "CANCEL",
+        "REJECT"
+      ],
+      "phase": "unit",
+      "requirements": [
+        "PREPARE frame accounting",
+        "EV04"
+      ],
+      "oracle": "Actual fragmented recv bytes equal independently framed input length; all 11 decoded types recorded."
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_runtime_telemetry.py::test_partial_send_failure_never_claims_byte_count_or_upload",
+      "phase": "unit",
+      "requirements": [
+        "EV04",
+        "SC13"
+      ],
+      "oracle": "Fake socket writes three bytes then raises; logger reports null, not 0/3/full payload, and publishes no successful frame/upload."
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_runtime_telemetry.py::test_incomplete_receive_does_not_count_complete_frame",
+      "phase": "unit",
+      "requirements": [
+        "EV04"
+      ],
+      "oracle": "Truncated payload emits failure with only observed recv bytes and no complete-frame event."
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_runtime_telemetry.py::test_committed_verification_has_exact_source_and_request_provenance",
+      "phase": "integration",
+      "requirements": [
+        "EV04",
+        "SC07",
+        "PREPARE post-event resource snapshots"
+      ],
+      "oracle": "Real coordinator and FileStore commit exact request/source once; late duplicate and unrelated request remain ignored; scheduler snapshot equals authoritative post-event state."
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_runtime_telemetry.py::test_verification_failure_classification_does_not_invent_hash_failure",
+      "parameters": [
+        "length-length_mismatch",
+        "hash-hash_mismatch",
+        "disk-local_io_error",
+        "false-store_rejected_unclassified"
+      ],
+      "phase": "integration",
+      "requirements": [
+        "EV04",
+        "SC08"
+      ],
+      "oracle": "Length mismatch, independently checked hash mismatch, local OSError and valid-byte generic false have distinct evidence and zero verified download credit."
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_runtime_telemetry.py::test_status_and_real_sampler_hook_are_periodic_with_manual_clock",
+      "phase": "integration",
+      "requirements": [
+        "EV10",
+        "PREPARE resource sample hook"
+      ],
+      "oracle": "Manual clock at 0, .999 and 1 verifies status cadence and exact unmodified provider values; no actual OS metrics claimed."
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_runtime_telemetry.py::test_invalid_resource_samples_are_explicit_errors_not_zero",
+      "parameters": [
+        "nan",
+        "infinite",
+        "bool",
+        "negative",
+        "empty",
+        "null"
+      ],
+      "phase": "integration",
+      "requirements": [
+        "PREPARE fail-closed metric evidence",
+        "EV02"
+      ],
+      "oracle": "Invalid provider samples emit a visible error, never a metric record or fabricated zeros."
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_runtime_telemetry.py::test_missing_or_failed_resource_provider_is_visible",
+      "parameters": [
+        "absent",
+        "raises"
+      ],
+      "phase": "integration",
+      "requirements": [
+        "PREPARE fail-closed metric evidence"
+      ],
+      "oracle": "Missing provider and provider exception remain explicit unavailable/error events."
+    },
+    {
+      "node": "bittorrent_lite/tests/acceptance/test_runtime_telemetry.py::test_same_length_hash_failure_retries_healthy_alternate_and_commits_only_valid_piece",
+      "phase": "integration",
+      "requirements": [
+        "P-T09",
+        "F02",
+        "SC08",
+        "EV04"
+      ],
+      "oracle": "Same-length XOR hash failure has no HAVE/store/credit; distinct healthy provider is requested for that same piece, valid bytes commit once with exact provenance and HAVE only after success. Real disk/coordinator, injected protocol events; no TCP claim."
+    }
+  ],
+  "remaining_gaps": [
+    "Actual psutil/process sampler injection, CPU/RSS/thread/descriptor peak observations and process identity are root-owned preparation.",
+    "Writer queue records are point samples; do not label their maximum a proven continuously observed high-water mark.",
+    "These fake-writer and disk/coordinator tests are not real-network, multiple-process, scalability, stress or multi-host evidence.",
+    "Frame failure bytes from sendall remain unknown; complete-frame totals cannot be labelled total socket bytes across failed sends.",
+    "Frame_received establishes a complete decoded frame only; frame_rejected may follow when session semantics reject it."
+  ]
+}

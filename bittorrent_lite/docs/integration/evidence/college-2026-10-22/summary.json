@@ -1,0 +1,129 @@
+{
+  "scope": "Reduced college submission handoff; not a complete final-acceptance campaign.",
+  "checks": [
+    {
+      "id": "077",
+      "passed": 30,
+      "skipped": 0,
+      "exit_code": 0,
+      "command_record_sha256": "cd47377d2ebf8731d8adaf0899a0509dc7add855b2ce975fc896fa363705b027",
+      "ledger_sha256": "49aa86269569c4a865a2f55f7ea66eb9d1ac109ed263815b89f0bfdd8736e268",
+      "elapsed_s": 34.64100000000326
+    },
+    {
+      "id": "078",
+      "passed": 788,
+      "skipped": 0,
+      "exit_code": 0,
+      "command_record_sha256": "0dfa164c6c2a38303c1b535f2fc76925e68c600d322d7b310db00dc3d8e187ed",
+      "ledger_sha256": "bf9842d1836dcc79e03c2f8302c364283b345722efed6064428686aaa863eaec",
+      "elapsed_s": 73.45299999997951
+    },
+    {
+      "id": "079",
+      "passed": 9,
+      "skipped": 0,
+      "exit_code": 0,
+      "command_record_sha256": "046fb43887de614ba50f685fe6d668b46fbde70e0fff0ee27d12113c17cbb41e",
+      "ledger_sha256": "9226a8694cecdda50e0ca9cbec2c41cff6ad269fa762c9efe8950d2da274e073",
+      "elapsed_s": 94.21899999998277
+    },
+    {
+      "id": "076",
+      "passed": 6,
+      "skipped": 0,
+      "exit_code": 0,
+      "command_record_sha256": "c6a23d4f1693834188f30dd01ee9f181fb359a35c6afe3d9ca3f79e8a584e2f8",
+      "ledger_sha256": "bc67d528747d7b3ad3b7634de763c05b83b81b8fbbc86c4633b9167df8da3d8e",
+      "elapsed_s": 92.96899999998277
+    }
+  ],
+  "files": [
+    {
+      "path": "077-junit.xml",
+      "sha256": "d3908254585a2d2d5ac45f43b0bb4d71f0b9fc1e0d07b68f9421e2ec3febce03",
+      "bytes": 10757
+    },
+    {
+      "path": "077-stdout.txt",
+      "sha256": "1f7b04e0960e871450d4bf5f4a30896bc500ff3f6a0a3c3494fd7ec0eeac0ce1",
+      "bytes": 102
+    },
+    {
+      "path": "077-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "078-junit.xml",
+      "sha256": "7b5c14138f4d6e9470949feb21564d9760b477f63da9f2a6c35608e3cd0853da",
+      "bytes": 267152
+    },
+    {
+      "path": "078-stdout.txt",
+      "sha256": "bcbb42a887b43a36c34ec2ca15edf4f85e0b7b17158f67cad675df34eb95fc95",
+      "bytes": 923
+    },
+    {
+      "path": "078-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "079-junit.xml",
+      "sha256": "4bd8fd001ab9efe3213c82fdf367c82fce92c4a8ce274a6c2a7df5bb3fb797e3",
+      "bytes": 3211
+    },
+    {
+      "path": "079-stdout.txt",
+      "sha256": "34900d1ee480aae588b2e609ecaea258373a935eeb4b4ecbd4ef47d15b8e897f",
+      "bytes": 111
+    },
+    {
+      "path": "079-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "076-junit.xml",
+      "sha256": "b084a6c9ccb3f9f1f1e8397cfe641bd07b8f5bc4fe12795a3f87bdc4de7a3f9d",
+      "bytes": 2313
+    },
+    {
+      "path": "076-stdout.txt",
+      "sha256": "696ba59e03c2eafb313f8e5fdb39ac22d278644ac95d13c978399cf4dca32bd2",
+      "bytes": 1535
+    },
+    {
+      "path": "076-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "081-portable-install.json",
+      "sha256": "1f7bd7377891bcd47ba500cf52233639c98d34acef57a17b9ce8edde5fa76b21",
+      "bytes": 7211
+    },
+    {
+      "path": "081-build-stdout.txt",
+      "sha256": "00b581fc07fd2a77d909a8486fafc0e9da1533f627da722f0312cd1b5526a7f6",
+      "bytes": 856
+    },
+    {
+      "path": "081-build-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  ],
+  "fresh_unique_pytest_cases": 797,
+  "portable_installed_transfers": 3,
+  "original_plan_sha256": {
+    "BitTorrent-Lite-Revised-Project-Guide.md": "dffb144c70dc7dd3a81a2ccacf831e2cfef4bfa03157f4a042eafd4f5b5c70f6",
+    "01-Rishikesh-Individual-Plan.md": "27a55a2b758be5fc7f0ef4afff4f1383a58d0cceaa75cbdd79562d17750dae84",
+    "02-Debargha-Individual-Plan.md": "5ee42a0873a20b74e2bdeb49112b77027ddb874a1228ab598eae6598fbb3a04a",
+    "03-Anik-Individual-Plan.md": "6df26c7a8f15e2a03279ea175b8c78179a1f21e8059b6a2b8286344d8d89e7fb",
+    "04-Prabhat-Individual-Plan.md": "58cd4ff7d6fdc2739b008349777b25652bb5f7efa35ea142def4edbaadfbf5f0"
+  },
+  "tested_code_unchanged_at_handoff": true,
+  "tested_source_snapshot_sha256": "66f46978a1dbe0e52630c2d03c70f68de98492cc258b4cd9c85c424eee2a1fbf"
+}

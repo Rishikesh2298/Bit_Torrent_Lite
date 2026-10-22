@@ -1,0 +1,29 @@
+{
+  "status": "PREPARE_STATIC_MAPPING_NOT_COLLECTED_OR_RUN",
+  "scope": "E2E helper unit procedures. All children and port allocation are mocked; no network or campaign credit.",
+  "expected_cases": 22,
+  "file": "bittorrent_lite/tests/acceptance/test_e2e_support_contracts.py",
+  "cases": [
+    {"test": "test_fixture_full_pieces_are_distinct_and_default_is_not_a_challenge", "requirements": ["PREPARE fixture distinctness and provenance"], "oracle": "Different full-piece starts/ends/hashes, explicit diagnostic seed, no challenge or isolation claim."},
+    {"test": "test_existing_source_is_never_overwritten", "requirements": ["preserve existing work"], "oracle": "Unrelated original source sentinel survives constructor refusal."},
+    {"test": "test_launch_registers_immediately_with_distinct_raw_and_structured_paths", "requirements": ["PREPARE owned-process registry", "EV02"], "oracle": "Mock call order is Popen then registration before launch publication; returned identity and stop file preserved; raw binary streams and event path distinct."},
+    {"test": "test_registration_failure_retains_owned_child_for_cleanup", "requirements": ["PREPARE ownership failure cleanup"], "oracle": "Failed registration raises while retaining the actual Popen object and a failure action record."},
+    {"test": "test_public_events_ignore_only_known_console_format", "requirements": ["EV01", "EV02"], "oracle": "Known formatted console line skipped; arbitrary malformed complete output fails."},
+    {"test": "test_complete_bad_lines_always_fail_even_while_child_runs", "parameters": ["json", "utf8", "array", "duplicate-key", "nan", "overflow-float", "blank"], "requirements": ["EV01", "EV02"], "oracle": "Complete invalid lines are fatal while process is running, including duplicate keys and nonfinite numbers."},
+    {"test": "test_only_running_incomplete_tail_can_be_temporarily_ignored", "requirements": ["EV01", "EV02"], "oracle": "A concurrent incomplete tail becomes an error after ordinary zero exit."},
+    {"test": "test_declared_kill_tail_is_preserved_and_described", "requirements": ["expected deliberate crash evidence", "EV02"], "oracle": "The raw bytes remain unchanged and final-tail offset/length/reason are recorded."},
+    {"test": "test_structured_stream_rejects_identity_time_and_console_contamination", "parameters": ["wrong-proc", "time-regression", "console"], "requirements": ["EV01", "EV02"], "oracle": "Dedicated structured stream rejects wrong proc label, descending monotonic timestamp and console contamination."},
+    {"test": "test_complete_checks_size_digest_and_bytewise_original_without_copying", "requirements": ["SY01 output oracle preparation", "PREPARE output verification"], "oracle": "Test-created product output is read-only compared with exact source bytes; same-size corruption fails."},
+    {"test": "test_missing_source_comparison_is_not_reported_as_isolation", "requirements": ["SY02 source access boundary"], "oracle": "A renamed but still accessible source yields no source-isolation claim."},
+    {"test": "test_deliberate_crash_records_intent_pid_time_and_exact_exit", "requirements": ["expected deliberate crash evidence"], "oracle": "Mocked kill records intent then result with exact PID/time and expected platform exit code."},
+    {"test": "test_ordinary_preexisting_nonzero_exit_cannot_be_silently_ignored", "requirements": ["EV01", "first failure stop policy"], "oracle": "An already-exited ordinary child with code7 fails cleanup and remains in results."},
+    {"test": "test_declared_tracker_teardown_is_separate_from_peer_success", "requirements": ["Appendix C.1 tracker cleanup"], "oracle": "Tracker termination has its own declaration/actions/expected platform code and is never labelled ordinary peer success."}
+  ],
+  "remaining_gaps": [
+    "Default generated fixtures are diagnostic and are not a fresh verifier-supplied challenge.",
+    "Source rename or absent original pathname is not an OS-enforced denial boundary; redistribution acceptance remains unproved.",
+    "Live registry/guardian kills, platform termination, stdout capture, and strict streams require recorded process validation.",
+    "The helper hashes with stdlib SHA-256; the campaign must also perform the plan's independent external file verification.",
+    "Actual process resource sampling injection is owned by the root CLI preparation task."
+  ]
+}

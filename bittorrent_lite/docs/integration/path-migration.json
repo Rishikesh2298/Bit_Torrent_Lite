@@ -1,0 +1,916 @@
+{
+  "base_commit": "6ea28b1ea8711e87b637d118699161f297143be6",
+  "files": [
+    {
+      "old": ".gitignore",
+      "new": ".gitignore",
+      "original_sha256": "e212daa1807771116a58547de770877afd148f4031badce7151f55c6ae1bcf53",
+      "migrated_sha256": "8d2a325549cceac9246c3f444645117482018f2014409b5afab3c639e7789844"
+    },
+    {
+      "old": "AI-USE.md",
+      "new": "AI-USE.md",
+      "original_sha256": "0f891d1a418085265d30213c6ca263f0f4f0d64245bde451a6e560c339c68a3a",
+      "migrated_sha256": "6afd0b2e3d7bc3578d938d2c5f3eb15959c81a41708e6993bcc24f890a99b759"
+    },
+    {
+      "old": "README.md",
+      "new": "README.md",
+      "original_sha256": "9de92ac8988eb6df4d3441099777bf365c9ce6dfb39b77bf03113b6da2fec072",
+      "migrated_sha256": "e99b19a7ea8abb4de69ce873d68429d89c78bd0122ea1edc553e2b2657abccfe"
+    },
+    {
+      "old": "bittorrent_lite/__init__.py",
+      "new": "bittorrent_lite/__init__.py",
+      "original_sha256": "2af5a3c41ec015b729c1b9b8c52da734b0ed219b5f7e9abfa3db1421713c7359",
+      "migrated_sha256": "2af5a3c41ec015b729c1b9b8c52da734b0ed219b5f7e9abfa3db1421713c7359"
+    },
+    {
+      "old": "bittorrent_lite/config.py",
+      "new": "bittorrent_lite/common/config.py",
+      "original_sha256": "c99bf09b6d3f8a0b25e258cf2ef8b9a544c2ead1f9903817761ce60458a315aa",
+      "migrated_sha256": "c99bf09b6d3f8a0b25e258cf2ef8b9a544c2ead1f9903817761ce60458a315aa"
+    },
+    {
+      "old": "bittorrent_lite/file_manager/__init__.py",
+      "new": "bittorrent_lite/storage/__init__.py",
+      "original_sha256": "6534a0c8b9b76d3e3737cc34d18e07736ba2141563cff6cac70aa85130887a0e",
+      "migrated_sha256": "6534a0c8b9b76d3e3737cc34d18e07736ba2141563cff6cac70aa85130887a0e"
+    },
+    {
+      "old": "bittorrent_lite/file_manager/file_store.py",
+      "new": "bittorrent_lite/storage/file_store.py",
+      "original_sha256": "1397970dbfb68f29f93ffaf2aa919f9e351ed577196659802c01ba0affddeda8",
+      "migrated_sha256": "4e58d8ae287a0fe78386b3fc73da2e0a25ed7922e7b4d11f02d6cacca9b9577c"
+    },
+    {
+      "old": "bittorrent_lite/file_manager/hasher.py",
+      "new": "bittorrent_lite/storage/hashing.py",
+      "original_sha256": "44652ec3d2bf26ffee3182a2c305c7dfc1e3199722548b9a8a112ee2e013f982",
+      "migrated_sha256": "edbf1a053cfae7276927c67dfd670864f5b5727f32dd8a3beb90c687de8f0e83"
+    },
+    {
+      "old": "bittorrent_lite/file_manager/metadata.py",
+      "new": "bittorrent_lite/storage/metadata.py",
+      "original_sha256": "4e1e20261830df42fd79620836966d7ee3d76a9069ada51f15ce9211f50bca25",
+      "migrated_sha256": "7341cbaf075109c96f36d276fd160d871346c94ba53ec014a20b7ceeb1021a27"
+    },
+    {
+      "old": "bittorrent_lite/file_manager/splitter.py",
+      "new": "bittorrent_lite/storage/pieces.py",
+      "original_sha256": "38dfd57c74682046cb19b00c945b135e93b38f9ef27dcf5974e96ec131b7e419",
+      "migrated_sha256": "897f957b6cb772a48ce120f5bd768beb77b40fba2886f046cddd956e86e017e3"
+    },
+    {
+      "old": "bittorrent_lite/file_store.py",
+      "new": "bittorrent_lite/storage/transfer_store.py",
+      "original_sha256": "f202c05f2cdd1358716b75df8e2785e709721fe24d30e4a1e87906d749943e64",
+      "migrated_sha256": "f202c05f2cdd1358716b75df8e2785e709721fe24d30e4a1e87906d749943e64"
+    },
+    {
+      "old": "bittorrent_lite/logger.py",
+      "new": "bittorrent_lite/common/logging.py",
+      "original_sha256": "c0202aca825ce2c93514dbd8722c4e01b30e30108af7b0a95e9ac3a91e261dda",
+      "migrated_sha256": "81f0d22ec489c3d99a7fc744fd21360a9e0392c3e11168eb88747652737d4de6"
+    },
+    {
+      "old": "bittorrent_lite/peer/__init__.py",
+      "new": "bittorrent_lite/application/__init__.py",
+      "original_sha256": "dbfa697083d0dcfbd7aa4cd826e7d75703ba7ca2ac5e5d581157a8ddc03e5365",
+      "migrated_sha256": "dbfa697083d0dcfbd7aa4cd826e7d75703ba7ca2ac5e5d581157a8ddc03e5365"
+    },
+    {
+      "old": "bittorrent_lite/peer/connection.py",
+      "new": "bittorrent_lite/networking/connection.py",
+      "original_sha256": "8675c884590d0229dcbae2d1e231d893392cbaa0b49f800f5178698ba363222d",
+      "migrated_sha256": "ac58cac9cd493fcf989b939dd6686d211f2fbfd342c24974836434643e3a8c35"
+    },
+    {
+      "old": "bittorrent_lite/peer/network.py",
+      "new": "bittorrent_lite/networking/network.py",
+      "original_sha256": "4f049e73746df6e729cc383db4313e0b435d36bdc8980928f1b738427909d05e",
+      "migrated_sha256": "512c651b437d21e5fbf2524725d50eb4e9736b80c06bf13e40767c0295c8e9c6"
+    },
+    {
+      "old": "bittorrent_lite/peer/peer_main.py",
+      "new": "bittorrent_lite/application/cli.py",
+      "original_sha256": "985bdde992ff58bf32f44fe5c28334b057e08a72d8c40936366d659b30e293ba",
+      "migrated_sha256": "e6b2a5ee831223b38375f537c8772b60ebb7020de994790eb43fb764d2f82819"
+    },
+    {
+      "old": "bittorrent_lite/peer/peer_state.py",
+      "new": "bittorrent_lite/application/peer_state.py",
+      "original_sha256": "4e592359e3d156a20199a1d4ed161181b681783c9ad6bb2a2b7d6c2b4f63369d",
+      "migrated_sha256": "934a429cef54f2ec27c630c333265216d47160bdec655409a67dc93c542d0d12"
+    },
+    {
+      "old": "bittorrent_lite/peer/piece_handler.py",
+      "new": "bittorrent_lite/networking/piece_handler.py",
+      "original_sha256": "52290d57a3e261a535abdbf43b57013bf3286b2d150dd4dba4082217fa0a638a",
+      "migrated_sha256": "0a8e5e31e442fb992b6709b8699a13ecccbfd9d08e03a6580c3394d6cd089847"
+    },
+    {
+      "old": "bittorrent_lite/peer/runtime.py",
+      "new": "bittorrent_lite/application/runtime.py",
+      "original_sha256": "db8c0e73d87ab3f7f7f3f742126ce6f011c55278cbebc75db67ca9c125cc104d",
+      "migrated_sha256": "78fe6a5e1b3497b61987d9ca0c2431c976a1d5630cb31cf007158548c3544cc3"
+    },
+    {
+      "old": "bittorrent_lite/peer/tracker_client.py",
+      "new": "bittorrent_lite/discovery/tracker_client.py",
+      "original_sha256": "d78a24ebc1ea52e37e590fee138b118e3e49baf3e5c82af4e6ac99e9b31e02ae",
+      "migrated_sha256": "21c08b68e866a6213ad723b6efcfde7d9c399fc4e3ea1cc645eca4e9c89225e0"
+    },
+    {
+      "old": "bittorrent_lite/piece_manager/__init__.py",
+      "new": "bittorrent_lite/scheduling/legacy/__init__.py",
+      "original_sha256": "d6c0916b35a9f62963eb7cc082ae02ebb8d38551f8f776094211fd9de0226a0e",
+      "migrated_sha256": "d6c0916b35a9f62963eb7cc082ae02ebb8d38551f8f776094211fd9de0226a0e"
+    },
+    {
+      "old": "bittorrent_lite/piece_manager/_choking_manager.py",
+      "new": "bittorrent_lite/scheduling/legacy/_choking_manager.py",
+      "original_sha256": "a5da096c57d82ed1ffa1234c94777e1fece94e5f59bedb35a91a92c9a0f6cbaf",
+      "migrated_sha256": "a5da096c57d82ed1ffa1234c94777e1fece94e5f59bedb35a91a92c9a0f6cbaf"
+    },
+    {
+      "old": "bittorrent_lite/piece_manager/choking.py",
+      "new": "bittorrent_lite/scheduling/legacy/choking.py",
+      "original_sha256": "5be9d7c777aba416871463ba313316733c403982dbd66d9f79bd86be9770f4c7",
+      "migrated_sha256": "d990216c4a6ec979e88b17ff760630aa48d8288bb23a07b8a3ead8db8e9b62a0"
+    },
+    {
+      "old": "bittorrent_lite/piece_manager/piece_picker.py",
+      "new": "bittorrent_lite/scheduling/legacy/piece_picker.py",
+      "original_sha256": "e055b04fa909604e3cf116dcd4bf0a2d1489593bc96d33ec9196566ac70dc792",
+      "migrated_sha256": "e055b04fa909604e3cf116dcd4bf0a2d1489593bc96d33ec9196566ac70dc792"
+    },
+    {
+      "old": "bittorrent_lite/piece_manager/request_manager.py",
+      "new": "bittorrent_lite/scheduling/legacy/request_manager.py",
+      "original_sha256": "1efb13fc88935931f47557f9e105bc51e1834b7b98e348571f0399ee430a71f7",
+      "migrated_sha256": "796cb4a3b6bbe589b70e5caca862241e9d37f4d4729c32f835a5e94693f91645"
+    },
+    {
+      "old": "bittorrent_lite/piece_manager/scheduler.py",
+      "new": "bittorrent_lite/scheduling/legacy/scheduler.py",
+      "original_sha256": "63623d28f7afcd20ef5749948e9b36aaa5b8e3119b1bd58db4b468bda944faea",
+      "migrated_sha256": "c3d0b0ae5f854d6b2047119ca7f9f138b456740388823eb7d8bf96c8136769a9"
+    },
+    {
+      "old": "bittorrent_lite/protocol/__init__.py",
+      "new": "bittorrent_lite/networking/__init__.py",
+      "original_sha256": "b788b7627bdc69ec1b7083b30e9005fcabb5f1fa25359dc5b8a2dedbcb99a912",
+      "migrated_sha256": "b788b7627bdc69ec1b7083b30e9005fcabb5f1fa25359dc5b8a2dedbcb99a912"
+    },
+    {
+      "old": "bittorrent_lite/protocol/framing.py",
+      "new": "bittorrent_lite/networking/framing.py",
+      "original_sha256": "0f00956d3093cf0ea071e060cfd8aa37248e1e7eb4929dbd7ebbe615c5885328",
+      "migrated_sha256": "2c40de44ac8ba26897d28754ff1ff2628b738b65dfd89d6d68644dc816b6aaa8"
+    },
+    {
+      "old": "bittorrent_lite/protocol/handshake.py",
+      "new": "bittorrent_lite/networking/session.py",
+      "original_sha256": "50a1df5a971a7aa99426efba15b6693fd4065725fb261f1e38b0091324bee9f3",
+      "migrated_sha256": "ff70fea0b3db15d0e76f292ec3fd6ce9787dc0ac5d213d661bece79b3a75dda1"
+    },
+    {
+      "old": "bittorrent_lite/protocol/messages.py",
+      "new": "bittorrent_lite/networking/messages.py",
+      "original_sha256": "367a4f05e73832906e0984b74b23a321370ba076bfbc8b2dace2e5424c1ec992",
+      "migrated_sha256": "00cd56ef9bcc1043bf6cf5441eae861cb37ca6bf60955542408b07257e6652e2"
+    },
+    {
+      "old": "bittorrent_lite/run_log.py",
+      "new": "bittorrent_lite/common/run_log.py",
+      "original_sha256": "0b437b8d0831984dc41031157e56a856fbf262d8ff128ead252aa60a8e58d8e4",
+      "migrated_sha256": "db4499edc79f11e4674f45f545df7081d803d367b28ecaaf41e009506cd98c29"
+    },
+    {
+      "old": "bittorrent_lite/scheduler/__init__.py",
+      "new": "bittorrent_lite/scheduling/__init__.py",
+      "original_sha256": "976a5c22b1a0318721076e1ba961de3798f6fa90d838656e87e2319945b24834",
+      "migrated_sha256": "e9eeb0a82089c6d3aa0e5875c76086cd6febf2c1c68d76bc77bae40447017a72"
+    },
+    {
+      "old": "bittorrent_lite/scheduler/adapters.py",
+      "new": "bittorrent_lite/application/adapters.py",
+      "original_sha256": "90c42d8673fb5b835678b8e77ee3e3196925a5206eb6d6e0f0a66d687fd8745e",
+      "migrated_sha256": "da92bec9967bde9f6d2379367aeba868f703a14a36202a761fa1feebcaf66051"
+    },
+    {
+      "old": "bittorrent_lite/scheduler/coordinator.py",
+      "new": "bittorrent_lite/scheduling/coordinator.py",
+      "original_sha256": "af2bb355e9d8f4386e30d412f6a9644c7e430e8e8bf42dc5fe60f17d576c1bd1",
+      "migrated_sha256": "879d724875b7d57fadcdf137f9740d2a5b4f2425e444c00873e708793d67a7ed"
+    },
+    {
+      "old": "bittorrent_lite/scheduler/events.py",
+      "new": "bittorrent_lite/common/events.py",
+      "original_sha256": "e47c098de005091b274788229ff1cd8f26e3e330fe084a4a6199c0f9994403b2",
+      "migrated_sha256": "e47c098de005091b274788229ff1cd8f26e3e330fe084a4a6199c0f9994403b2"
+    },
+    {
+      "old": "bittorrent_lite/scheduler/interfaces.py",
+      "new": "bittorrent_lite/common/interfaces.py",
+      "original_sha256": "b070db2216b4187a026760df67189486fd906a7fd40a47dd31139d0a0efe6be1",
+      "migrated_sha256": "b070db2216b4187a026760df67189486fd906a7fd40a47dd31139d0a0efe6be1"
+    },
+    {
+      "old": "bittorrent_lite/scheduler/models.py",
+      "new": "bittorrent_lite/scheduling/models.py",
+      "original_sha256": "e1446634c3aae33ab0eade7e78c1bc95cf295091be52c77279c7e22d0a0aeeed",
+      "migrated_sha256": "24022c740ddc194470ec587f1d3dc91035795cd8973cb196c53d51c07446bad1"
+    },
+    {
+      "old": "bittorrent_lite/scheduler/piece_picker.py",
+      "new": "bittorrent_lite/scheduling/piece_picker.py",
+      "original_sha256": "46b62b790ad8714e5eec7c06517e3aa6e6f8ce624addfb35e13d1f5fe2c299f6",
+      "migrated_sha256": "46b62b790ad8714e5eec7c06517e3aa6e6f8ce624addfb35e13d1f5fe2c299f6"
+    },
+    {
+      "old": "bittorrent_lite/scheduler/request_manager.py",
+      "new": "bittorrent_lite/scheduling/request_manager.py",
+      "original_sha256": "02bc9e39e4db4ad87c4a48a495af36f77f478c9bf6da64021054f74fc0cf9ad9",
+      "migrated_sha256": "67f95752b7b325a92b3c1de4d143e797554555850b401bea367bb06fc3187ac8"
+    },
+    {
+      "old": "bittorrent_lite/scheduler/upload_policy.py",
+      "new": "bittorrent_lite/scheduling/upload_policy.py",
+      "original_sha256": "97f6f3fa153569d724a5aadd9d93ae60d979de21fd64646d19b514ff14fea246",
+      "migrated_sha256": "051f875ecd575b442ef3f5bfd8094703854f449be3ac7da0beef3e2bb8bcc548"
+    },
+    {
+      "old": "bittorrent_lite/scheduler/uploads.py",
+      "new": "bittorrent_lite/scheduling/uploads.py",
+      "original_sha256": "fe9fb21a9532d6b88e31ba1e1bf5cf888cbefe372ca8ebdea19229357956ce1c",
+      "migrated_sha256": "78128bffdb49eca9e0198c4484f5b205862c24290dfb1c1d9c4bfbb0b7299232"
+    },
+    {
+      "old": "bittorrent_lite/scripts/__init__.py",
+      "new": "bittorrent_lite/application/metadata_tools/__init__.py",
+      "original_sha256": "bdbf0d3371e2795e57fe1d15621140153c2a30a411c4c1a77bf3deba0b6c6973",
+      "migrated_sha256": "bdbf0d3371e2795e57fe1d15621140153c2a30a411c4c1a77bf3deba0b6c6973"
+    },
+    {
+      "old": "bittorrent_lite/scripts/generate_metadata.py",
+      "new": "bittorrent_lite/storage/generate_metadata.py",
+      "original_sha256": "62e021db6baa7866726657bd21a5141698b3fd61ef81020d11abfca1781654f8",
+      "migrated_sha256": "e0636457d83b490fe66dcf9014bb545f76f750fcfe5eb6007a6a38a5f791502c"
+    },
+    {
+      "old": "bittorrent_lite/tracker/__init__.py",
+      "new": "bittorrent_lite/discovery/__init__.py",
+      "original_sha256": "3abeda951d86611615bcde0257b4cd0817d251448c4608c194dcc551d44cad35",
+      "migrated_sha256": "3abeda951d86611615bcde0257b4cd0817d251448c4608c194dcc551d44cad35"
+    },
+    {
+      "old": "bittorrent_lite/tracker/tracker_server.py",
+      "new": "bittorrent_lite/discovery/tracker_server.py",
+      "original_sha256": "9841397560ae3826b5d113ef047ca6547e839ad0670c9f3988fb350589caa98e",
+      "migrated_sha256": "a350bd7f4dedcb1d78b9ea7139083512af6cf4f1235d64dc6010dc499e638cbf"
+    },
+    {
+      "old": "bittorrent_lite/tracker/tracker_state.py",
+      "new": "bittorrent_lite/discovery/tracker_state.py",
+      "original_sha256": "ceb0596da1d38f0c7b123dceeb9c4238c98217a731f0d9704598b8f9fdc01b9e",
+      "migrated_sha256": "13864380932d6daede25152cc8c67e80ad854fbf686ee374a98cf1f5adb62c29"
+    },
+    {
+      "old": "bittorrent_lite/types.py",
+      "new": "bittorrent_lite/common/types.py",
+      "original_sha256": "43fa6fc1d14d98a202e6abca02b31141132a67d61d3c46ed3b6fc04147441886",
+      "migrated_sha256": "43fa6fc1d14d98a202e6abca02b31141132a67d61d3c46ed3b6fc04147441886"
+    },
+    {
+      "old": "choking_policy/README.md",
+      "new": "bittorrent_lite/scheduling/choking_policy/README.md",
+      "original_sha256": "6ab4de41378cfa822b3b8f93fb671dfc5fa2829628cb037583fb3d5cd31528d7",
+      "migrated_sha256": "fe67ff3039eb2c9592c6366e9644f6d952e23ff5200a87de60087467f279b066"
+    },
+    {
+      "old": "choking_policy/__init__.py",
+      "new": "bittorrent_lite/scheduling/choking_policy/__init__.py",
+      "original_sha256": "ced65ca8e8c052f9535e2f38c45cb6f48c2ab17c64732455a76bf8d7277bdfbe",
+      "migrated_sha256": "dc20ae32fd9ba361d270d63e38e150db783091cfa60333f20215f423bd6a5989"
+    },
+    {
+      "old": "choking_policy/__main__.py",
+      "new": "bittorrent_lite/scheduling/choking_policy/__main__.py",
+      "original_sha256": "9464797c29dd6fff75ed9bf7c1a7ed317b2ea8bb13f3d09c2239abafb96703f9",
+      "migrated_sha256": "ce2a277211829041a75443b35b282067563df52170e1191f7d5c7103652269c9"
+    },
+    {
+      "old": "choking_policy/models.py",
+      "new": "bittorrent_lite/scheduling/choking_policy/models.py",
+      "original_sha256": "c146fcbec08bdb6537f92d3eeb0626ce59e1e527c6c8e428ee8210f1fd93d8d0",
+      "migrated_sha256": "4902ba06778a9e0b22f1e8c37328a02702c431fa5c33ac1bfa817b2f71731169"
+    },
+    {
+      "old": "choking_policy/policy.py",
+      "new": "bittorrent_lite/scheduling/choking_policy/policy.py",
+      "original_sha256": "a3e75e908efcc58854cead6da9fafe55830d900aebbd08b800716a5e1d93fd07",
+      "migrated_sha256": "6532a0f3aa40456189e41c5197b8c801748cc87ca67b7fa948b5ddb8b5f7a7d3"
+    },
+    {
+      "old": "docs/experiment-method.md",
+      "new": "bittorrent_lite/docs/debargha/experiment-method.md",
+      "original_sha256": "2a64af8b7c928d76ed67158488dca3dea9a68eced384d42314f18b354153207c",
+      "migrated_sha256": "a418a94f887f2aa711ef1fe9647a7bf250454800271b5417d07f3dd2ab085672"
+    },
+    {
+      "old": "docs/log-events.md",
+      "new": "bittorrent_lite/docs/debargha/log-events.md",
+      "original_sha256": "c92de77b5936d63f270ba10481d5d9847c889163dcf3ab51751fb80b40fa467d",
+      "migrated_sha256": "f6c535344115590fe4ac366a8b8526ea954c71d49e73e35ecde3124bf25a8fa5"
+    },
+    {
+      "old": "docs/original-plan-alignment.md",
+      "new": "bittorrent_lite/docs/integration/original-plan-alignment.md",
+      "original_sha256": "97f25892d98e67183a028f297a11f678230329bbe79607aaeb2d03ca6b3b381e",
+      "migrated_sha256": "f70ef7e9c030485adee022d5718b563f8a0de1d5e895d9fe0b8f18091924807b"
+    },
+    {
+      "old": "docs/peer-runtime-handoff.md",
+      "new": "bittorrent_lite/docs/integration/peer-runtime-handoff.md",
+      "original_sha256": "ad3b55ebacb0032c1ff6ed3747f1f40ece9d67a9a15ffcb165a82068908d0b9b",
+      "migrated_sha256": "d2b256c4506ff8d9b59527510ed9aced72bcd16219876a78ce4598219c94a1f8"
+    },
+    {
+      "old": "docs/post-merge-testing.md",
+      "new": "bittorrent_lite/docs/integration/post-merge-testing.md",
+      "original_sha256": "324a506cb2e5c70e8782486d19d9b77ced9d5fdebab9e23b15fd4df4ee5954bc",
+      "migrated_sha256": "324a506cb2e5c70e8782486d19d9b77ced9d5fdebab9e23b15fd4df4ee5954bc"
+    },
+    {
+      "old": "docs/prabhat-progress.md",
+      "new": "bittorrent_lite/docs/prabhat/prabhat-progress.md",
+      "original_sha256": "159f950900a9344d2c706a1a704f4fb715da8fdabb401e19c6e86d23fe12c7cb",
+      "migrated_sha256": "62a2a6b15b7fe4a82a18ccae7f5940a864aa84f5bc83fce66d3ee5084db3f478"
+    },
+    {
+      "old": "docs/protocol_spec.md",
+      "new": "bittorrent_lite/docs/anik/protocol_spec.md",
+      "original_sha256": "f63047413b8e10165dccfd8e9e33367e3fd183909deb815422681265a4096c48",
+      "migrated_sha256": "f63047413b8e10165dccfd8e9e33367e3fd183909deb815422681265a4096c48"
+    },
+    {
+      "old": "docs/recovery-policy.md",
+      "new": "bittorrent_lite/docs/prabhat/recovery-policy.md",
+      "original_sha256": "ba3065959afbd90257e4c8a71c5c1eaa21b914a069d13f6c35efceac8abe3f54",
+      "migrated_sha256": "f32b3dd0551bdde337e29e8043b9d67bcf408a42b78e6982cd565407b6e42e29"
+    },
+    {
+      "old": "docs/request-pipeline.md",
+      "new": "bittorrent_lite/docs/prabhat/request-pipeline.md",
+      "original_sha256": "6b37fc717e4e61fd37a6a9b65889e2b05ce6bd5efd42220235c81e17e38983be",
+      "migrated_sha256": "4091fca2d9424fb01bcc95cb6683f110008b4ae2f301b0cf6071ad952eac3b42"
+    },
+    {
+      "old": "docs/scheduler.md",
+      "new": "bittorrent_lite/docs/prabhat/scheduler.md",
+      "original_sha256": "de7ed8d3f02710686e678a1e41e5a04e2042d75c20182e992f2518f52c0951c9",
+      "migrated_sha256": "dcee8a604feadd75cacbb1a46a24bf8538473602902b746302e273db0c8cc470"
+    },
+    {
+      "old": "docs/test-audit.md",
+      "new": "bittorrent_lite/docs/integration/test-audit.md",
+      "original_sha256": "3e13de1ba591fe126af2f10ddc697a675609285bf7fc74d7b47d5ef88a247439",
+      "migrated_sha256": "191f7a99098fa01443238c06fffbee465401ad3e766e8be2a4ad8316e68e477b"
+    },
+    {
+      "old": "docs/tracker.md",
+      "new": "bittorrent_lite/docs/debargha/tracker.md",
+      "original_sha256": "10199fb06a9f6debdfd2f7cdd1a4840bc6dff26236c3a09c7d79fbb8e2b69c8a",
+      "migrated_sha256": "4e96440e0d3bb2e3aef77ace168f5e7021bc191c9626ddd52c7a1c12be360fd4"
+    },
+    {
+      "old": "docs/upload-and-choking.md",
+      "new": "bittorrent_lite/docs/prabhat/upload-and-choking.md",
+      "original_sha256": "002665bcf7b40c80ca7a9a9d523bf4f9a6f276ce051cfd1745d0bd9fe07e2234",
+      "migrated_sha256": "d7c8a1ebc5e14355be982ccf0af3d0b1c0365f41ef9b0db9fda4017ec0149dcc"
+    },
+    {
+      "old": "docs/upload-service-standalone.toml",
+      "new": "bittorrent_lite/docs/prabhat/upload-service-standalone.toml",
+      "original_sha256": "678f149ff945be9b040224e342f94ec55d6a6788d76f56099d1df8286f1d62f4",
+      "migrated_sha256": "e5dec09a07f82f73d01af90be600371a1263b14608ff084b1a352485bf271eeb"
+    },
+    {
+      "old": "examples/__init__.py",
+      "new": "bittorrent_lite/examples/__init__.py",
+      "original_sha256": "2ebf3ad16238427db81941e3b923c4c93aded2d98de2d9e571ff9cc03a8f3ff2",
+      "migrated_sha256": "2ebf3ad16238427db81941e3b923c4c93aded2d98de2d9e571ff9cc03a8f3ff2"
+    },
+    {
+      "old": "examples/scheduler_demo.py",
+      "new": "bittorrent_lite/examples/scheduler_demo.py",
+      "original_sha256": "457aca6d895be402e0400f546a8e8f91632bddd3ffe8257005c0ba23c82528cb",
+      "migrated_sha256": "6f92656b96cf0f2800497018f96fc7f326a9c961c0089822249fdd152e485f32"
+    },
+    {
+      "old": "examples/scheduler_dependencies.py",
+      "new": "bittorrent_lite/examples/scheduler_dependencies.py",
+      "original_sha256": "ce421747fb070c59733a6ec924f3aebf23475ca54c62cc27bb127208d608e8cc",
+      "migrated_sha256": "ce421747fb070c59733a6ec924f3aebf23475ca54c62cc27bb127208d608e8cc"
+    },
+    {
+      "old": "experiments/__init__.py",
+      "new": "bittorrent_lite/experiments/__init__.py",
+      "original_sha256": "563359ab6656ec8b4bc2f63f5d68594b2062dbfee8038394bdaf83ddf864c9fd",
+      "migrated_sha256": "22bcdaf9a6b2f693a196c572c19b5f2fcd11cb11b2adbde2e67b948af6265297"
+    },
+    {
+      "old": "experiments/collect.py",
+      "new": "bittorrent_lite/experiments/scripts/collect.py",
+      "original_sha256": "d33df81c8f6aa65f84a505f6bccecab004ad4b5b4f5fcdecf3a5f2aea492a522",
+      "migrated_sha256": "bf72945ccf250afa92ce15a0ca99bb4f1c385d6467e8512cc57ad57b17214b35"
+    },
+    {
+      "old": "experiments/configs/base.json",
+      "new": "bittorrent_lite/experiments/configs/base.json",
+      "original_sha256": "d827472fe56d43ab3b790d67d6a5e06a7493ac57cc360e35f412fb6514605d1a",
+      "migrated_sha256": "989f0802514eb8d2668caba2dc8aa37828ec703bc2f23d55b43623f8de05bf04"
+    },
+    {
+      "old": "experiments/configs/stand_in.json",
+      "new": "bittorrent_lite/experiments/configs/stand_in.json",
+      "original_sha256": "e03b987c6ace05db3354221aa37610b2c86dd6e21fdda4c326fd2b4496ad8851",
+      "migrated_sha256": "9d92623348aff69b3764947f3b5ad6e4cd92ec67a8a50eac724acdc2de24e76c"
+    },
+    {
+      "old": "experiments/launcher.py",
+      "new": "bittorrent_lite/experiments/scripts/launcher.py",
+      "original_sha256": "6f1a41b8613dd86e609d917b188953df434d664be3d6a63e2d8d1a31a1f1cb1b",
+      "migrated_sha256": "512acfff7ce6d086918d0549079896e3b5987209631c56fc491e961c1e202075"
+    },
+    {
+      "old": "experiments/make_fixture.py",
+      "new": "bittorrent_lite/experiments/scripts/make_fixture.py",
+      "original_sha256": "09895354b4405f6991475df37e0169c27fe7e39c37cd816805a30926bb4cc60c",
+      "migrated_sha256": "9083c84a0fdf0a0674fb4e12c13589c5a59fdea5b645b7e2af068d37b432f449"
+    },
+    {
+      "old": "experiments/matrix.py",
+      "new": "bittorrent_lite/experiments/scripts/matrix.py",
+      "original_sha256": "c86d491b940b639d86ee0be07af0aacd2d0a61f33eab1813e85ce5abe4f13a5e",
+      "migrated_sha256": "8027afd52ef2d4b69d02ec265839f96921f0735724f0e1cc2fc20dbcc3d4c4ca"
+    },
+    {
+      "old": "experiments/plot.py",
+      "new": "bittorrent_lite/experiments/scripts/plot.py",
+      "original_sha256": "b5ef2c25ce09ffe065096170844b907adbaa8d5d260a791d53c58f89ea7020d8",
+      "migrated_sha256": "42a6376e1d3d4901777ced413cdedf3652d9b05b5923c8e3dc760120fd23b427"
+    },
+    {
+      "old": "experiments/stand_in_peer.py",
+      "new": "bittorrent_lite/experiments/scripts/stand_in_peer.py",
+      "original_sha256": "39feb418636b9fe8c51657ab7ec941f2cc46445126c3da6eb16127dbef7d2ddf",
+      "migrated_sha256": "bb22fab92b3a532f1b3c56032fa347e3f8954bf576aaa5544493e33890793af5"
+    },
+    {
+      "old": "pytest.ini",
+      "new": "pytest.ini",
+      "original_sha256": "93dac66233bc9d8aa6991af78d5c2051885dce0dc20a895a5597fc59a7b0ba80",
+      "migrated_sha256": "e670fc55c820aec0fdc2b05002ce5ec06189df1a5b8249860b74d55987678770"
+    },
+    {
+      "old": "recovery_policy/README.md",
+      "new": "bittorrent_lite/scheduling/recovery/README.md",
+      "original_sha256": "e701c99bb9bcd32a9c0925eae40457d479fb0c57e75f140f72fdde38d92c1764",
+      "migrated_sha256": "6e00301d7e96eeb57398fae2b9aa6069bcb492ac49351fad38e366ab7f88c273"
+    },
+    {
+      "old": "recovery_policy/__init__.py",
+      "new": "bittorrent_lite/scheduling/recovery/__init__.py",
+      "original_sha256": "2411e67e506c1fbec027728aab84652791b2e4df2643c539496847db22fd9133",
+      "migrated_sha256": "d042ef8f6f41f9483d6e81d6e115d6cd87a9ce0237cf5ac5f5a7060ee3aee009"
+    },
+    {
+      "old": "recovery_policy/__main__.py",
+      "new": "bittorrent_lite/scheduling/recovery/__main__.py",
+      "original_sha256": "0cb4e1fef4579dc7ab838426b7c333adde31f3afb3c2d94350996d1efa09fdcb",
+      "migrated_sha256": "8ee0f4f61ccd68e04ca047faf1f033265fd9fd1038f2c8c7a9dc8d8d7df0311a"
+    },
+    {
+      "old": "recovery_policy/config.py",
+      "new": "bittorrent_lite/scheduling/recovery/config.py",
+      "original_sha256": "2b4920073c9f94583f0770eee721437bc7568bb689f5fe3de569c77ea6a88e89",
+      "migrated_sha256": "2b4920073c9f94583f0770eee721437bc7568bb689f5fe3de569c77ea6a88e89"
+    },
+    {
+      "old": "recovery_policy/policy.py",
+      "new": "bittorrent_lite/scheduling/recovery/policy.py",
+      "original_sha256": "11f82e2249d1654a03f4f2a39e66bade52ccfc605e1b338d04477738e44a33ce",
+      "migrated_sha256": "2180d4a8332522ed6be5c02b21b121b66ee7614fdf921b44c949a10501728e58"
+    },
+    {
+      "old": "recovery_policy/selection.py",
+      "new": "bittorrent_lite/scheduling/recovery/selection.py",
+      "original_sha256": "67975bdcad20b4929ee6f16df257264db82803b39fa760f9b996a34e2bc5cb55",
+      "migrated_sha256": "67975bdcad20b4929ee6f16df257264db82803b39fa760f9b996a34e2bc5cb55"
+    },
+    {
+      "old": "request_pipeline/README.md",
+      "new": "bittorrent_lite/scheduling/request_pipeline/README.md",
+      "original_sha256": "8093cbbfb0b856a177a3b41e9f1b2c1fc88b30d99351319ad89f7a04d04f46d2",
+      "migrated_sha256": "dc4babe6da619f89750df0d619848dd305c0e01020c89bbf89ca87c7fba1fde0"
+    },
+    {
+      "old": "request_pipeline/__init__.py",
+      "new": "bittorrent_lite/scheduling/request_pipeline/__init__.py",
+      "original_sha256": "6a17369debf3439e9f44a940778a92fdf9a28b4cceabe337b139e2e4e5777833",
+      "migrated_sha256": "c626fae3a4ac40e07f98979b339b8fbb60b46c8efb00496a21eba9e421628054"
+    },
+    {
+      "old": "request_pipeline/__main__.py",
+      "new": "bittorrent_lite/scheduling/request_pipeline/__main__.py",
+      "original_sha256": "c43a373001a6b8a52f87c946479dadddcd6c1ee6f3bb4d67dc8081cc80f8804a",
+      "migrated_sha256": "1d2efdca224d1772da83327894dc8341b2ca9a92cef620db70508a4e756273cd"
+    },
+    {
+      "old": "request_pipeline/example.json",
+      "new": "bittorrent_lite/scheduling/request_pipeline/example.json",
+      "original_sha256": "c90419d5aaff660ae11925f850df15932e5b37c04d2fc8d1d97d7914aa0ece01",
+      "migrated_sha256": "c90419d5aaff660ae11925f850df15932e5b37c04d2fc8d1d97d7914aa0ece01"
+    },
+    {
+      "old": "request_pipeline/manager.py",
+      "new": "bittorrent_lite/scheduling/request_pipeline/manager.py",
+      "original_sha256": "2fd92fa03d27b432238acd803e7c77a1aa57d5da076aa5f7c07e8a30ba1be5d6",
+      "migrated_sha256": "e10799b106b48ef05a8ef547ed143338fc62e9a9f546aad47aa2f9c36022c520"
+    },
+    {
+      "old": "request_pipeline/models.py",
+      "new": "bittorrent_lite/scheduling/request_pipeline/models.py",
+      "original_sha256": "eae4daa3722c8fb654b9bf78fb5d94b6736c5e4c28c822221d20a0082cf19579",
+      "migrated_sha256": "eae4daa3722c8fb654b9bf78fb5d94b6736c5e4c28c822221d20a0082cf19579"
+    },
+    {
+      "old": "requirements.txt",
+      "new": "requirements.txt",
+      "original_sha256": "7f85f80daba6a07e38355679d0e772bb92503a008319b46a4650edfcb097a16e",
+      "migrated_sha256": "7f85f80daba6a07e38355679d0e772bb92503a008319b46a4650edfcb097a16e"
+    },
+    {
+      "old": "tests/__init__.py",
+      "new": "bittorrent_lite/tests/__init__.py",
+      "original_sha256": "1fbb32d9665ee81bc02418aaaddcf86566fc279376d482bea13327d0997eba48",
+      "migrated_sha256": "1fbb32d9665ee81bc02418aaaddcf86566fc279376d482bea13327d0997eba48"
+    },
+    {
+      "old": "tests/integration/file_manager/test_file_manager.py",
+      "new": "bittorrent_lite/tests/integration/storage/test_file_manager.py",
+      "original_sha256": "bb5e79bba9816ebe60db7eac2207fa7ae3ea45157580d3f6de0e89f311587f9c",
+      "migrated_sha256": "54ca8478bb9c31d41b53a62e8d9f8ad29c3f3baaf39e4ec2fbf361c8fe2e5504"
+    },
+    {
+      "old": "tests/test_bitfield_have.py",
+      "new": "bittorrent_lite/tests/networking/test_bitfield_have.py",
+      "original_sha256": "f1122b1aabcf2e7b69e5a27c0d6a9f833d9f206826115cc489bfa065c4f71f0b",
+      "migrated_sha256": "3cd6495a2681e86c5d5eebdf49849569b36879503d10924fa7eedc4140a8d7a2"
+    },
+    {
+      "old": "tests/test_bitfield_have_network.py",
+      "new": "bittorrent_lite/tests/networking/test_bitfield_have_network.py",
+      "original_sha256": "0d10ce33c0b3841048bf89fad600702908740a94bd4080cb9acb69bd969f1975",
+      "migrated_sha256": "79cc5be6e4e47cf668dc9dbd7d4c430d951a962a813fe3f6bfac39fb902c3ba6"
+    },
+    {
+      "old": "tests/test_cancel_reject.py",
+      "new": "bittorrent_lite/tests/networking/test_cancel_reject.py",
+      "original_sha256": "5e6e617a4de94e645ebee1607de35d8b90aeb51c14ba4d9f0d6410d716ee0a1b",
+      "migrated_sha256": "400cf24a5acd6fddc6699fb7eea46c12ae58c2f670752d03fd057a9d3a7a1dda"
+    },
+    {
+      "old": "tests/test_choke_unchoke.py",
+      "new": "bittorrent_lite/tests/networking/test_choke_unchoke.py",
+      "original_sha256": "f31c883224758b920f887d4b52fbd240312da628c2aeeb642826adbe37e9cd34",
+      "migrated_sha256": "c056ec2487eed7ef177ce035e02d0d6c9b1d49fd6073c14909638f3b7c5a3b9d"
+    },
+    {
+      "old": "tests/test_choking.py",
+      "new": "bittorrent_lite/tests/scheduling/test_choking.py",
+      "original_sha256": "60879ea1b2f398ba9ffdea5f0439cea9d80ae0e67f335219838a6c63f8f75c86",
+      "migrated_sha256": "d9097a737c2d9958cb298dad927453121986201655323030cdf78193a2fedf59"
+    },
+    {
+      "old": "tests/test_choking_network.py",
+      "new": "bittorrent_lite/tests/networking/test_choking_network.py",
+      "original_sha256": "ccd5118eb8f5f4fbc1b30c242d783b6e6d9f2e22c95268d6186f77dc65787996",
+      "migrated_sha256": "a67504ca29d01388e6efd2a2b6a6b51551b1f3aa176092f04a809fa32fe1b4ff"
+    },
+    {
+      "old": "tests/test_choking_policy.py",
+      "new": "bittorrent_lite/tests/scheduling/test_choking_policy.py",
+      "original_sha256": "bbdb0c30e44379005a4d09135fd4c9f18e4c98cd813dac83e00015f0d315efb8",
+      "migrated_sha256": "12ad8bb44ac74a65a865e8755790ef7a863774e223c0cee768c5d0459725bbee"
+    },
+    {
+      "old": "tests/test_connection.py",
+      "new": "bittorrent_lite/tests/networking/test_connection.py",
+      "original_sha256": "021746b2dd839d51b3410059f0077a1baa3e49537e1dce189ff7e4b95fd6e6df",
+      "migrated_sha256": "658f8b689dbf00263e733e835d67b458836d7c8c0110f39283d9edc8e05a29e3"
+    },
+    {
+      "old": "tests/test_connection_lifecycle.py",
+      "new": "bittorrent_lite/tests/networking/test_connection_lifecycle.py",
+      "original_sha256": "43cecb74fc787352650688c636f561385e354c83a831ac73fe45648056f4bc4f",
+      "migrated_sha256": "5400d40dfc7f097018303118c37193e99df023be94ffdb8a1147684f069e6542"
+    },
+    {
+      "old": "tests/test_existing_behavior.py",
+      "new": "bittorrent_lite/tests/integration/test_existing_behavior.py",
+      "original_sha256": "8481faaed8f5dda7c3ee3a0292b0f967eab93e96460189253b337c10d1193f51",
+      "migrated_sha256": "3979bcce3708c126c442a6e12dd11ffa5af100548b071b699d42fb58eb767fea"
+    },
+    {
+      "old": "tests/test_experiments.py",
+      "new": "bittorrent_lite/tests/discovery/test_experiments.py",
+      "original_sha256": "63664aa6c916f21e39146cd2c3f732465be923adeff58ab8a578816d553e567f",
+      "migrated_sha256": "d6581914a7248bfca921c02fc0d3d85771eb9a874b1939087f2244ccd8ccf327"
+    },
+    {
+      "old": "tests/test_file_manager.py",
+      "new": "bittorrent_lite/tests/storage/test_file_manager.py",
+      "original_sha256": "4a74c9f20967ecbc4514cc4ca3e33f8ef52191d86f29f520de615a4afefdb1aa",
+      "migrated_sha256": "57a4fdee0a2948a0aa1de4da4dfae96968f263b8f1361ec07e2bd23ddafa127b"
+    },
+    {
+      "old": "tests/test_file_store.py",
+      "new": "bittorrent_lite/tests/storage/test_file_store.py",
+      "original_sha256": "17d51e03bf29f8c5d2c5811327621b57a499020d1cf0306657340bc5b34d0996",
+      "migrated_sha256": "c0895beb3c308b79ceb7667079d4851d82e1c96bc8563158bc40fa8b6981a4ca"
+    },
+    {
+      "old": "tests/test_framing.py",
+      "new": "bittorrent_lite/tests/networking/test_framing.py",
+      "original_sha256": "32e34291c3d824665b1c09d7bb9b29f5e56ca9f4af7d111b8199633aa5c872d8",
+      "migrated_sha256": "e04680a1b07d182182826cfeb544d04642e1165e1bea88ff093ca02cd01e100b"
+    },
+    {
+      "old": "tests/test_handshake.py",
+      "new": "bittorrent_lite/tests/networking/test_handshake.py",
+      "original_sha256": "a600f15274de27df2ee98c61938503c33fa4ec108f112bc469ef914bdff9cd82",
+      "migrated_sha256": "a15a7722f219a792b7554ce36a56766780dfb7af586d34af426a79c783e77c99"
+    },
+    {
+      "old": "tests/test_handshake_connection.py",
+      "new": "bittorrent_lite/tests/networking/test_handshake_connection.py",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "migrated_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "old": "tests/test_handshake_lifecycle.py",
+      "new": "bittorrent_lite/tests/networking/test_handshake_lifecycle.py",
+      "original_sha256": "2b957d5b57f9c52f6c5c238b4921833da178cc8dfbe8cab8b50ad24f1493aa99",
+      "migrated_sha256": "ee53ec6e07f76155e5b5cabdf9666fedb4eea164f96fa3e5ebf985e4e9372bfc"
+    },
+    {
+      "old": "tests/test_messages.py",
+      "new": "bittorrent_lite/tests/networking/test_messages.py",
+      "original_sha256": "f2e089eeb749b38e27e75e7ce5638aa22f343997d688ebab99223ec192cb52de",
+      "migrated_sha256": "15f10a35d715e2095014ed6101e9518286438a1de7d5fa0d887786c050240ef1"
+    },
+    {
+      "old": "tests/test_module_imports.py",
+      "new": "bittorrent_lite/tests/integration/test_module_imports.py",
+      "original_sha256": "06951173083ccfd6ffa1345a3146c83343f2eb538919c528b2d68e155bf6824d",
+      "migrated_sha256": "29125de0295ce3f3808c4d5fa657c4dac3a09c15492422a64d779f55ea4c6628"
+    },
+    {
+      "old": "tests/test_network_handshake.py",
+      "new": "bittorrent_lite/tests/networking/test_network_handshake.py",
+      "original_sha256": "66a876da3de80dda6f2d773453c376c743f6fc6d7a725fa94d61d70fa7a20348",
+      "migrated_sha256": "408adba8c384fc833dd928dd2376c374b3a169bafc2b953c24b7b98788dc80fe"
+    },
+    {
+      "old": "tests/test_network_piece_transfer.py",
+      "new": "bittorrent_lite/tests/networking/test_network_piece_transfer.py",
+      "original_sha256": "adaf4f1d891831a7606a34cc6cef3229f9a4b068c4c018a357772720793b57be",
+      "migrated_sha256": "44c3bfe1e231e67f4584812e3e7d2fe2a16eb75ff0ec6944381d98fb45019fa4"
+    },
+    {
+      "old": "tests/test_original_plan.py",
+      "new": "bittorrent_lite/tests/integration/test_original_plan.py",
+      "original_sha256": "dee52b2845c55d1c0a9b175dc8d0830c127d4428a96dd59d18c1fa4c6d098ea3",
+      "migrated_sha256": "d213f99540a938035ca01463318965cb900bfc2520b94d001c3172b88186ad4f"
+    },
+    {
+      "old": "tests/test_peer_network.py",
+      "new": "bittorrent_lite/tests/networking/test_peer_network.py",
+      "original_sha256": "00637a7cfb4f9b351b1326a47ae213a6b3559214e93cd0e0dde088c7fc59ac5d",
+      "migrated_sha256": "91af1e6f05fbf572102b199640b516ad0e56e99c761329141800d847c7d20b9b"
+    },
+    {
+      "old": "tests/test_peer_runtime.py",
+      "new": "bittorrent_lite/tests/integration/test_peer_runtime.py",
+      "original_sha256": "980b9a34e302e2e1add86a3374ef616b7da96289fbc7b8e39f32624c59f85719",
+      "migrated_sha256": "92a98ecaadac7d4fae7efbde0ec3ee496a37434074d3cd7883f00ced4debe046"
+    },
+    {
+      "old": "tests/test_piece_handler.py",
+      "new": "bittorrent_lite/tests/networking/test_piece_handler.py",
+      "original_sha256": "84e3c098aa2f90bb419a68c01ee685d7c2583dfd3b2cc0d2a3eb6bc25f52acc5",
+      "migrated_sha256": "386ef04d669f687551985299f0705c6b0b0e2fd0d9c94509fd50898df3c8c182"
+    },
+    {
+      "old": "tests/test_piece_manager.py",
+      "new": "bittorrent_lite/tests/scheduling/test_piece_manager.py",
+      "original_sha256": "a1a2cc00382ac61431816d7d32520cbdac0c8a6ca0874377794e063329487e98",
+      "migrated_sha256": "56ee74a141fd73f6b35d39cc040a649898bf07eb7a8f9b4264ab8be28f715bd7"
+    },
+    {
+      "old": "tests/test_piece_picker.py",
+      "new": "bittorrent_lite/tests/scheduling/test_piece_picker.py",
+      "original_sha256": "ee6651ef74a33e4fb72672e1b3ebfc2d7a92590440af052620735be856a5e4e8",
+      "migrated_sha256": "19b4ffdd6d40f9868b3e0fdc6ebbffd7bc37d9145c06c5db8e33eb2a34320391"
+    },
+    {
+      "old": "tests/test_pipeline_integration.py",
+      "new": "bittorrent_lite/tests/integration/test_pipeline_integration.py",
+      "original_sha256": "d1ebe4a4904c43b3899127e1414940ce73668acfc85b769f57f43359c938e613",
+      "migrated_sha256": "796a9fcdefa52459caf1bb77b4d0018f30a5963124bbefba2fa8e982c61a1190"
+    },
+    {
+      "old": "tests/test_prabhat_selection_contract.py",
+      "new": "bittorrent_lite/tests/scheduling/test_prabhat_selection_contract.py",
+      "original_sha256": "9107744dddd077d6360a94a34e7c464365342dc844a156efc9add8c7e0dd6451",
+      "migrated_sha256": "28f276da818e5be95b3aafd6486e0728534ead4d0790e27ad5786a0caa97294d"
+    },
+    {
+      "old": "tests/test_recovery_integration.py",
+      "new": "bittorrent_lite/tests/integration/test_recovery_integration.py",
+      "original_sha256": "85b46c44e0a456c615c748d8286b080f3faf6d630c7df3799e1b61f22ec88c3a",
+      "migrated_sha256": "ebf83fa61654fa65fb1d2edea528710e1d276adb630516c8e408204de7f8e5e5"
+    },
+    {
+      "old": "tests/test_recovery_policy.py",
+      "new": "bittorrent_lite/tests/scheduling/test_recovery_policy.py",
+      "original_sha256": "0b2260e6f9a7b06815ac250167af329067e25372fa56408797ca4a2793bcca1a",
+      "migrated_sha256": "177051791bce144f1767b0ff5e0e9ca05d9a133893bf998f5256f23bfff73912"
+    },
+    {
+      "old": "tests/test_request_manager.py",
+      "new": "bittorrent_lite/tests/scheduling/test_request_manager.py",
+      "original_sha256": "697dfbd91f71ee5143ad763c1399f485d5de4e237a7db4b4dee7b895b63ae06a",
+      "migrated_sha256": "0c672b51a665fda35dbd1b3054026c02b5304710bd6d76dc267fb76af0fa7b9b"
+    },
+    {
+      "old": "tests/test_request_piece.py",
+      "new": "bittorrent_lite/tests/networking/test_request_piece.py",
+      "original_sha256": "eaf94f93b9c1ec6a29d7133b663711842567fab64596f1b4bdd5fd420ceb0296",
+      "migrated_sha256": "bc004c3665d3caa8fba0aee6fa9262dde929972b3ecc15c8a723a5c88b31e25a"
+    },
+    {
+      "old": "tests/test_request_pipeline.py",
+      "new": "bittorrent_lite/tests/scheduling/test_request_pipeline.py",
+      "original_sha256": "eb1eac0f633a97fe26c8d176cd8e9beae4a547dd600637559032e2b910d7654e",
+      "migrated_sha256": "ee2adf563aa8750806aedc9385d20bb747719214b1533a3f1967860ba75194ed"
+    },
+    {
+      "old": "tests/test_scheduler.py",
+      "new": "bittorrent_lite/tests/scheduling/test_scheduler.py",
+      "original_sha256": "7f95f8dc3739c0d9164aea4ea8980c893d8d7bf24189018756c5dcf379379f56",
+      "migrated_sha256": "91a5e0628310e668a73a893fe786d2119005998071d07508fe7f7d10e23cfcc8"
+    },
+    {
+      "old": "tests/test_scheduler_integration.py",
+      "new": "bittorrent_lite/tests/integration/test_scheduler_integration.py",
+      "original_sha256": "924aa58af05543228676b8342a337e5fe54ea61fe9b94e19b59d4c403be4fc66",
+      "migrated_sha256": "8438072cff3d7663e346ecafcd90299c8e33cc4998a0356e2aa3af66d7658abb"
+    },
+    {
+      "old": "tests/test_tracker.py",
+      "new": "bittorrent_lite/tests/discovery/test_tracker.py",
+      "original_sha256": "3892c3e37e888e38045507fba90c2ea6342f41ca74debfe1dbaef7173ba72e7e",
+      "migrated_sha256": "e3df479ce33ca6b5b3f4f38500a02feef2de05685cc39c463ef36f953c719df1"
+    },
+    {
+      "old": "tests/test_tracker_client.py",
+      "new": "bittorrent_lite/tests/discovery/test_tracker_client.py",
+      "original_sha256": "924b47b64de194c7034c07782ac019ea708406074c2b4acb4082d4151ed4bbc7",
+      "migrated_sha256": "fa6c3d3861d1e15c9dd6e651fdcc418aa620d38bba038d57e21baf6391350fe0"
+    },
+    {
+      "old": "tests/test_upload_integration.py",
+      "new": "bittorrent_lite/tests/integration/test_upload_integration.py",
+      "original_sha256": "143ee8b7fb243658c2efd3ff33e053bf5cacf9a4ad4f8b36e20547fec01d7baf",
+      "migrated_sha256": "b1a95a1c18d73ced745a691689868b638c6f054b43c22349998c42420188ca70"
+    },
+    {
+      "old": "tests/test_upload_service.py",
+      "new": "bittorrent_lite/tests/networking/test_upload_service.py",
+      "original_sha256": "e62f9a1e769bb0bf410fe8c52fb89f9405ae048f1cedff058d41ec869945593d",
+      "migrated_sha256": "b1496db190a5f2459984825f2e1d5c4ad82ec78eb6a61ecf5e8081071acbc852"
+    },
+    {
+      "old": "tests/unit/file_manager/test_file_store.py",
+      "new": "bittorrent_lite/tests/storage/unit/test_file_store.py",
+      "original_sha256": "9613866b75187aa243a49721cfc569ce83a7b8643c260d6530685c0584eb1875",
+      "migrated_sha256": "44a3da7045687e290b000bf3f079da3b68172d8d513d9de0a507cdee8b6b7f45"
+    },
+    {
+      "old": "tests/unit/file_manager/test_hasher.py",
+      "new": "bittorrent_lite/tests/storage/unit/test_hasher.py",
+      "original_sha256": "b82126c820fcc772c9cd162e1fe39082484a9e908c0455b827a7f62bac1b9b57",
+      "migrated_sha256": "480c0569f24972ada017749d18490303679676e0a1b3199b60387de4548881a9"
+    },
+    {
+      "old": "tests/unit/file_manager/test_metadata.py",
+      "new": "bittorrent_lite/tests/storage/unit/test_metadata.py",
+      "original_sha256": "8d9679cd949d062aba7badc2baf3c2a0c2d8fe8c86945df1bcc014ef5b8ba55a",
+      "migrated_sha256": "e9780ed9dab6747c74a9fb7608efa0113191d97d7e5c43678edb8f2c5f7e9ff6"
+    },
+    {
+      "old": "tests/unit/file_manager/test_splitter.py",
+      "new": "bittorrent_lite/tests/storage/unit/test_splitter.py",
+      "original_sha256": "65837ba0fa5368c3162fdf5b32ec6db477ffc20fa1f918336d99523e7b9a1231",
+      "migrated_sha256": "b8c3c2bd730193c51262c4113e57a238864c64faa3f74a0c3f48413f41efdf6e"
+    },
+    {
+      "old": "upload_service/README.md",
+      "new": "bittorrent_lite/scheduling/upload_service/README.md",
+      "original_sha256": "ac4eebb7fd4c128e6a4b7ca4911400a6c2b413c4bc9293685a08b719f928ec31",
+      "migrated_sha256": "a7414e262615ef3c008f8d1c70dc7fc77ec2ec619ef14f13996f92f442a3a09c"
+    },
+    {
+      "old": "upload_service/__init__.py",
+      "new": "bittorrent_lite/scheduling/upload_service/__init__.py",
+      "original_sha256": "b419e922ba829bca8c24e03598e422979e4072fb4952c0d05050ecb06eb49f37",
+      "migrated_sha256": "a7f3f3d6301507ac196139c9565f652171503b31a3817f643958857bba9dc2d0"
+    },
+    {
+      "old": "upload_service/__main__.py",
+      "new": "bittorrent_lite/scheduling/upload_service/__main__.py",
+      "original_sha256": "68d76109f8baf54818ed21a2d97fea65cd85e387674382a0671438f38c91b36f",
+      "migrated_sha256": "ff0e606408d40c71673794d11b8accffe70d1e558207675ec3c0e091e238b25b"
+    },
+    {
+      "old": "upload_service/models.py",
+      "new": "bittorrent_lite/scheduling/upload_service/models.py",
+      "original_sha256": "a1410db6e410f67f7174426225d335842fcd5fdccfc6685f41e060722f3f8cb2",
+      "migrated_sha256": "a1410db6e410f67f7174426225d335842fcd5fdccfc6685f41e060722f3f8cb2"
+    },
+    {
+      "old": "upload_service/service.py",
+      "new": "bittorrent_lite/scheduling/upload_service/service.py",
+      "original_sha256": "ae051bd163ad9ad57d50d8976683ac611555058183e2a1bbda2e1aebd1f1b6bc",
+      "migrated_sha256": "8183fc6f6550e790d8062795231f79e0793fd23eb1f65f3f86e4a3c00d446a54"
+    },
+    {
+      "old": "upload_service/sources.py",
+      "new": "bittorrent_lite/scheduling/upload_service/sources.py",
+      "original_sha256": "0c508a1ff7d1bffd905dc6c2ad4aed2e7afb2a9ede4969ccdde96c4553d94546",
+      "migrated_sha256": "251297c1a1b0818f07789b07466f02e356bb56786b4f2057de9f4e2827194e65"
+    },
+    {
+      "old": "docs/prabhat-remaining-plans/part-2-request-pipeline.md",
+      "new": "bittorrent_lite/docs/plans/follow-up/part-2-request-pipeline.md",
+      "original_sha256": "4bd4c26b634b1148e23a0ab21d448d394a99ef1cb151e340e541e3ae6863e097",
+      "migrated_sha256": "51815c5d6190b827abcf82fcfd8949ec80df7494150a4aa3460eb415c6e69ed3"
+    },
+    {
+      "old": "docs/prabhat-remaining-plans/part-3-recovery-policy.md",
+      "new": "bittorrent_lite/docs/plans/follow-up/part-3-recovery-policy.md",
+      "original_sha256": "ae7fb60f3f870ca2cf6d64cfb2f1963e526ef10a0fd817f0dde1728ccd31c3d1",
+      "migrated_sha256": "e70262ec2f48c181815b9052c07cc9bc5551f7576e2dcbe73577a8a7a8f45bec"
+    },
+    {
+      "old": "docs/prabhat-remaining-plans/part-4-upload-service.md",
+      "new": "bittorrent_lite/docs/plans/follow-up/part-4-upload-service.md",
+      "original_sha256": "a540841b10eb90580c406a3c022a1df848d78f43993a702a4ea4244e5b2063cd",
+      "migrated_sha256": "3d970a00b3c6552f81426e2ae087a573f077392725ea8a258f1a9f08a0afd3d6"
+    },
+    {
+      "old": "docs/prabhat-remaining-plans/part-5-choking-policy.md",
+      "new": "bittorrent_lite/docs/plans/follow-up/part-5-choking-policy.md",
+      "original_sha256": "83813a549168b38fbd39c1231bc42715fcd2b67bb52436902df9182e4905bf32",
+      "migrated_sha256": "41849fe83aedd0acf6045a671ca416a03621cb2d22b9d78881dde1c7924915e6"
+    }
+  ],
+  "original_plans": [
+    {
+      "name": "01-Rishikesh-Individual-Plan.md",
+      "sha256": "27a55a2b758be5fc7f0ef4afff4f1383a58d0cceaa75cbdd79562d17750dae84"
+    },
+    {
+      "name": "02-Debargha-Individual-Plan.md",
+      "sha256": "5ee42a0873a20b74e2bdeb49112b77027ddb874a1228ab598eae6598fbb3a04a"
+    },
+    {
+      "name": "03-Anik-Individual-Plan.md",
+      "sha256": "6df26c7a8f15e2a03279ea175b8c78179a1f21e8059b6a2b8286344d8d89e7fb"
+    },
+    {
+      "name": "04-Prabhat-Individual-Plan.md",
+      "sha256": "58cd4ff7d6fdc2739b008349777b25652bb5f7efa35ea142def4edbaadfbf5f0"
+    },
+    {
+      "name": "BitTorrent-Lite-Revised-Project-Guide.md",
+      "sha256": "dffb144c70dc7dd3a81a2ccacf831e2cfef4bfa03157f4a042eafd4f5b5c70f6"
+    }
+  ],
+  "validation": "Static inspection only; runtime and tests pending user authorization."
+}

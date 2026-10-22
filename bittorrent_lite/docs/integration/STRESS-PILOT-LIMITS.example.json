@@ -1,0 +1,31 @@
+{
+  "peer_max": {
+    "rss_bytes": 536870912,
+    "thread_count": 128,
+    "tcp_socket_count": 64,
+    "descriptor_count": 1024
+  },
+  "settled_growth": {
+    "rss_bytes": 134217728,
+    "thread_count": 8,
+    "tcp_socket_count": 8,
+    "descriptor_count": 64
+  },
+  "supervisor_growth": {
+    "rss_bytes": 268435456,
+    "thread_count": 4,
+    "tcp_socket_count": 4,
+    "descriptor_count": 64
+  },
+  "active_jobs": 40,
+  "neighbor_records": 1024,
+  "sample_gap_s": 3,
+  "busy_freshness_s": 1,
+  "settle_s": 3,
+  "start_timeout_s": 45,
+  "cleanup_timeout_s": 15,
+  "disk_headroom_bytes": 10737418240,
+  "raw_log_budget_bytes": 1073741824,
+  "ram_headroom_bytes": 1073741824,
+  "pilot_evidence": null
+}

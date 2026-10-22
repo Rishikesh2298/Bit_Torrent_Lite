@@ -1,0 +1,133 @@
+{
+  "status": "PASS",
+  "commands": [
+    {
+      "label": "build-wheel",
+      "argv": [
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\final-acceptance\\preparation-20261022-01\\environment\\venv\\Scripts\\python.exe",
+        "-m",
+        "pip",
+        "wheel",
+        "--no-deps",
+        "--no-build-isolation",
+        "--wheel-dir",
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun\\build artifacts",
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun\\relocated source \u03a9\\BitTorrent"
+      ],
+      "cwd": "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun",
+      "exit_code": 0
+    },
+    {
+      "label": "create-environment",
+      "argv": [
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\final-acceptance\\preparation-20261022-01\\environment\\venv\\Scripts\\python.exe",
+        "-m",
+        "venv",
+        "--without-pip",
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun\\fresh environment \u03a9"
+      ],
+      "cwd": "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun",
+      "exit_code": 0
+    },
+    {
+      "label": "install-wheel",
+      "argv": [
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\final-acceptance\\preparation-20261022-01\\environment\\venv\\Scripts\\python.exe",
+        "-m",
+        "pip",
+        "--python",
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun\\fresh environment \u03a9\\Scripts\\python.exe",
+        "install",
+        "--no-index",
+        "--no-deps",
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun\\build artifacts\\bittorrent_lite-0.1.0-py3-none-any.whl"
+      ],
+      "cwd": "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun",
+      "exit_code": 0
+    },
+    {
+      "label": "dependency-check",
+      "argv": [
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\final-acceptance\\preparation-20261022-01\\environment\\venv\\Scripts\\python.exe",
+        "-m",
+        "pip",
+        "--python",
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun\\fresh environment \u03a9\\Scripts\\python.exe",
+        "check"
+      ],
+      "cwd": "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun",
+      "exit_code": 0
+    },
+    {
+      "label": "installed-origins",
+      "argv": [
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun\\fresh environment \u03a9\\Scripts\\python.exe",
+        "-I",
+        "-c",
+        "import importlib,json,sys\nfrom pathlib import Path\nnames=['bittorrent_lite.application.cli','bittorrent_lite.storage.file_store','bittorrent_lite.discovery.tracker_server','bittorrent_lite.networking.framing','bittorrent_lite.scheduling.coordinator']\nrows={n:str(Path(importlib.import_module(n).__file__).resolve()) for n in names}\nassert all(Path(p).is_relative_to(Path(sys.prefix)) for p in rows.values()), rows\nprint(json.dumps(rows))\n"
+      ],
+      "cwd": "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun",
+      "exit_code": 0
+    },
+    {
+      "label": "help-0",
+      "argv": [
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun\\fresh environment \u03a9\\Scripts\\python.exe",
+        "-I",
+        "-m",
+        "bittorrent_lite",
+        "--help"
+      ],
+      "cwd": "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun",
+      "exit_code": 0
+    },
+    {
+      "label": "help-1",
+      "argv": [
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun\\fresh environment \u03a9\\Scripts\\python.exe",
+        "-I",
+        "-m",
+        "bittorrent_lite.storage.generate_metadata",
+        "--help"
+      ],
+      "cwd": "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun",
+      "exit_code": 0
+    },
+    {
+      "label": "help-2",
+      "argv": [
+        "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun\\fresh environment \u03a9\\Scripts\\python.exe",
+        "-I",
+        "-m",
+        "bittorrent_lite.discovery.tracker_server",
+        "--help"
+      ],
+      "cwd": "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun",
+      "exit_code": 0
+    }
+  ],
+  "transfers": [
+    {
+      "bytes": 1,
+      "status": "PASS",
+      "sha256": "af193a8cdcd0e3fb39e71147e59efa5cad40763d2611f5beff34a274f514362f",
+      "directory": "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun\\actual transfer 1"
+    },
+    {
+      "bytes": 65536,
+      "status": "PASS",
+      "sha256": "8fa3bdeb78e2006caafb3f74b688a1e35255d45817ab79e3b89152d2379c5672",
+      "directory": "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun\\actual transfer 65536"
+    },
+    {
+      "bytes": 524411,
+      "status": "PASS",
+      "sha256": "7b133bc7895183f02f388dc8025a906888428a2660f12149a327cf8aa0d7ed76",
+      "directory": "C:\\Users\\KIIT\\Documents\\ChatGPT\\cn project\\BitTorrent\\.validation\\college-readiness-20261022\\portable install with spaces \u03a9 rerun\\actual transfer 524411"
+    }
+  ],
+  "source_sha256": "66f46978a1dbe0e52630c2d03c70f68de98492cc258b4cd9c85c424eee2a1fbf",
+  "scope": "Local Windows submission check; not formal acceptance or cross-device evidence.",
+  "wheel_sha256": "03cb55ad9a7f60ae1dbaa3203c81e8d35b5c2497025110a8c50b97b22983e996",
+  "source_preserved": true
+}

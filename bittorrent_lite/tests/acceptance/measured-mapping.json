@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "status": "AUTHORED_NOT_EXECUTED",
+  "phase": "03",
+  "scope": "Unit validation of measured preparation tooling only; no real matrix, isolation, killed observer, independent verifier, CSV or plot credit",
+  "module": "bittorrent_lite/acceptance_tools/measured.py",
+  "test_file": "bittorrent_lite/tests/acceptance/test_measured.py",
+  "parameter_policy": "Expand each selector into collected parameter IDs with the root ledger; never treat this authored mapping as collected or executed evidence",
+  "mappings": [
+    {
+      "requirements": ["EV03"],
+      "selectors": ["test_exact_original_matrix_has_nine_configs_three_seeds_and_shared_baseline", "test_matrix_rejects_semantically_invalid_even_resealed_plan", "test_matrix_missing_resource_instrumentation_is_blocked"],
+      "assertions": "Exact original 9x3 generated population, order/repeats/shared baseline, fixed settings, distinct comparable seeds, real command/schema/resource flag rejection"
+    },
+    {
+      "requirements": ["EV01", "EV03"],
+      "selectors": ["test_driver_stops_before_second_run_on_first_unexpected_failure", "test_driver_and_final_inventory_reconcile_every_mock_identity"],
+      "assertions": "Pure callback control-flow negative controls: first launch/semantic failure starts no second run; exact required mock inventory; no empty/missing/duplicate/mixed-revision success"
+    },
+    {
+      "requirements": ["EV04"],
+      "selectors": ["test_metric_arithmetic_counts_actual_senders_unique_commits_and_complete_lifetime", "test_retry_definition_and_hash_failure_are_recomputed_from_events", "test_metric_verifier_rejects_malformed_inconsistent_or_missing_evidence", "test_missing_required_telemetry_remains_blocked", "test_killed_peer_without_independent_full_interval_observer_is_blocked"],
+      "assertions": "Artificial event arithmetic: complete sender frames, request/retry definition, hash mismatch, unique commits, independent piece sizes, queue/resource maxima, final counters/lifetime, unknown or missing evidence rejected"
+    },
+    {
+      "requirements": ["EV04", "EV05"],
+      "selectors": ["test_commit_provenance_requires_matching_remote_frame_endpoints", "test_availability_uses_commits_and_actual_lifetimes_instead_of_missing_as_zero"],
+      "assertions": "Artificial cross-stream endpoint/request/piece/length provenance and event-boundary availability only; no CSV grouping/join or actual network claim"
+    },
+    {
+      "requirements": ["EV01", "EV02"],
+      "selectors": ["test_live_parser_never_skips_bad_complete_lines_or_consumes_partial_tail", "test_live_strict_parser_checks_sequence_and_independently_supplied_pid"],
+      "assertions": "Parser does not consume partial tails or skip bad completed rows; exact sequence and supplied observed PID enforced before offset/record credit"
+    },
+    {
+      "requirements": ["EV03"],
+      "selectors": ["test_revision_identity_reads_and_hashes_git_files_without_subprocesses", "test_guarded_execute_uses_original_stage_apis_without_legacy_execute_or_git_spawn"],
+      "assertions": "Owned unit files exercise loose/packed/detached/worktree revision identity and mismatch; stubbed stage dispatch creates no processes and never calls legacy execute/git helpers; false output preserved"
+    },
+    {
+      "requirements": ["NC06", "EV03", "EV04"],
+      "selectors": ["test_artificial_semantic_fixture_exercises_oracles_and_separate_timing_origins"],
+      "assertions": "Diagnostic artifact unit fixture: independent real byte hashes, expected completion, first-peer distribution versus tracker/setup and per-peer origins, cleanup duration and useful-byte denominator; no actual barrier/timing experiment credit"
+    },
+    {
+      "requirements": ["EV01", "EV03", "EV04"],
+      "selectors": ["test_semantic_verifier_rejects_false_success_and_inconsistent_artifacts"],
+      "assertions": "Artificial artifact rejection for failed status, false/missing/source/output hash, changed bytes, missing/empty/truncated/sequence/PID event stream, mixed revision, duplicate process, missing/false interpreter registration, unexpected exit, altered raw logs and synthetic config"
+    },
+    {
+      "requirements": ["EV03", "EV04"],
+      "selectors": ["test_full_matrix_blocks_before_first_launch_without_killed_observer", "test_acceptance_cannot_bypass_unvalidated_os_source_isolation_by_calling_api_directly"],
+      "assertions": "Unresolved prerequisites are explicit BLOCKED; zero Run construction on full-matrix gate; all 27 remain uncredited; direct API cannot bypass source isolation gate"
+    },
+    {
+      "requirements": ["EV03"],
+      "selectors": ["test_tracker_readiness_probe_posts_exact_stopped_json_and_retains_bytes", "test_tracker_readiness_verifier_rejects_wrong_http_contract_even_with_valid_json"],
+      "assertions": "Diagnostic049 regression: exact POST /announce JSON file_id/peer_id/listen_port/stopped contract, request and response bytes/hashes/content headers retained, HTTP connection closed, GET/query/wrong port field/membership event/digest/interval/member list/content length rejected; unit HTTP stub provides no real-network credit"
+    },
+    {
+      "requirements": ["EV03"],
+      "selectors": ["test_tracker_psutil_termination_requires_exact_mechanism_and_exit"],
+      "assertions": "Diagnostic049 observed Windows psutil termination is predeclared as psutil-TerminateProcess-SIGTERM and requires exact exit 15; exit 1 and ambiguous generic TerminateProcess mechanisms are rejected without accepting multiple codes"
+    },
+    {
+      "requirements": ["ST07", "EV03", "EV04"],
+      "selectors": ["test_initial_seeder_source_ready_event_has_no_download_completion_or_useful_byte_credit", "test_initial_seeder_rejects_false_readiness_ownership_and_download_credit", "test_initial_seeder_claimed_ready_output_is_independently_byte_verified"],
+      "assertions": "Diagnostic065 oracle regression: initial seed source-ready COMPLETE is independently byte-verified, has full initial ownership and zero newly downloaded/request credit, remains excluded from exact downloader completions/timing/useful-byte population; false/duplicate/missing event, invented counter/commit/request, incomplete ownership, late source check and corrupt seed output rejected. Artificial unit fixtures only; actual existing lifecycle test separately asserts genuine seed event and zero download credit."
+    }
+  ],
+  "open_requirements": [
+    "Independent killed-peer full-interval transport and storage metric observer, including negative controls",
+    "OS-enforced source-denial isolation and independent proof for downloader identity",
+    "Actual guarded lifecycle/Windows wrapper diagnostic and full freeze of strict logging/runtime/dependencies",
+    "All 27 real primary runs following every earlier acceptance phase",
+    "Phase 11 strict CSV grouping/joins and five graph families with rendered visual checks",
+    "Fresh external challenge and independent reviewer artifact audit"
+  ]
+}

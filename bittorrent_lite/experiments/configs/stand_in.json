@@ -1,0 +1,14 @@
+{
+  "name": "standin",
+  "L": 2,
+  "S": 1,
+  "synthetic": true,
+  "timeout_s": 60,
+  "launch_gap_s": 0.05,
+  "peer_command": ["{python}", "bittorrent_lite/experiments/scripts/stand_in_peer.py",
+                   "--peer-id", "{peer_id}", "--port", "{port}",
+                   "--tracker", "{tracker_url}", "--metadata", "{metadata}",
+                   "--output-dir", "{peer_dir}", "--simulate-source", "{fixture}"],
+  "strategy_args": ["--strategy", "{strategy}"],
+  "free_rider_args": ["--upload-slots", "0"]
+}

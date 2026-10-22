@@ -1,0 +1,8 @@
+{"op":"create","num_pieces":3,"seed":7}
+{"op":"failed","now":0,"provider":"A","piece":2,"kind":"reject"}
+{"op":"rank_candidates","now":1,"provider":"A","candidates":[0,2],"availability":[2,0,1]}
+{"op":"failed","now":2,"provider":"A","piece":2,"kind":"undeclared_kind"}
+{"op":"rank_candidates","now":2,"provider":"A","candidates":[0,2],"availability":[2,0,1]}
+{"op":"allow_duplicate","now":5,"piece":1,"provider":"B","pending":[{"request_id":1,"provider":"A","piece":1,"queued_at":0,"sent_at":0,"verifying":false}],"missing_count":1,"no_unreserved_candidates":true}
+{"op":"succeeded","now":5,"provider":"B","piece":2}
+{"op":"snapshot","now":5}
