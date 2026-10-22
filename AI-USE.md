@@ -1,21 +1,25 @@
 # AI Usage Documentation
 
-## Project: P8 – P2P File Distribution (BitTorrent-Lite)
-## Course: CS-30003 – Coding Assignment 1
+**Project:** BitTorrent-Lite (P8)
 
----
+**Course:** CS-30003 – Coding Assignment 1
 
-## AI Tool Used
+## Part 1
 
 - **Tool:** Claude (Sonnet 5.5 / Opus 5.5), accessed through the coding assistant used for the project
 - **Additional tool:** OpenAI Codex (repository review, picker assistance and regression fixes)
 - **Period:** September–October 2026
 
----
+## Part 2
 
-## How AI Was Used
+Prabhat supplied the independently developed `request_pipeline.zip`. The package
+is retained as `request_pipeline` with its standalone API and CLI. An OpenAI assistant wired
+it into the scheduler, fixed malformed CLI operation handling, and added
+lifecycle, fault, randomized accounting, and storage/bridge integration tests.
+The source ZIP was preserved unchanged. This work did not merge other branches
+or implement the peer network loop.
 
-### ✅ Permitted Uses
+## Part 3
 
 | Category | Description |
 |---|---|
@@ -29,7 +33,7 @@
 | **Test Generation** | AI assisted with test cases and test harnesses to help check expected behavior and regressions |
 | **Refinement** | AI suggested targeted improvements; team members were responsible for understanding, reviewing, and validating changes |
 
-### ❌ Not Used For
+## Combined Part 4
 
 | Category | Description |
 |---|---|
@@ -38,9 +42,28 @@
 | **Peer State Machine** | The peer connection state machine was implemented by team members |
 | **Message Framing** | TCP framing (partial reads, length-prefixed messages) was implemented by team members |
 
----
+At Prabhat's request, the assistant also replaced the 56 skipped test placeholders
+with executable checks, fixed handshake-version validation exposed by those checks,
+and documented the seven failures caused by the unfinished tracker state.
+On request, the assistant implemented the tracker-state methods and added regression
+coverage for heartbeat errors, expiry boundaries, detached snapshots and concurrent
+membership changes. The tracker HTTP server remains unfinished.
+The expanded audit added worker-transfer and invalid-input regressions, then fixed
+partial mutations on invalid upload shutdown/dispatch arguments and invalid tracker
+expiry timeouts. Validation included the full suite with warnings treated as errors,
+source compilation and the scheduler demo.
+At Prabhat's request, the assistant compared the integrated code with the original
+September individual/master plans and aligned project scheduling, request IDs,
+CHOKE behavior, timer recovery, upload selection, cancellation hooks, event bounds
+and final-assembly status. Original-plan regressions and handoff documentation
+were added; standalone optional behaviors remain separate from project defaults.
+On request, the assistant completed independent owner-loop orchestration, CLI
+configuration, metrics/status, discovery/session handoffs and bounded shutdown,
+removed the unused choking scaffold, and tested the runtime with simulated
+backends and real disk storage. Real socket/tracker integration remains a team
+handoff; no real-network acceptance result is claimed.
 
-## Detailed Log
+## Earlier project assistance
 
 | Date | Member | What AI Helped With | Category |
 |---|---|---|---|

@@ -1,0 +1,11 @@
+{
+  "num_pieces": 3,
+  "actions": [
+    {"op":"register_connection","connection_id":1,"provider_id":"source-A","now":0},
+    {"op":"set_available","connection_id":1,"piece_indices":[0,1,2],"now":0},
+    {"op":"set_permissions","connection_id":1,"interested":true,"unchoked":true,"now":0},
+    {"op":"reserve","connection_id":1,"piece_index":0,"now":0},
+    {"op":"confirm_sent","key":{"connection_id":1,"request_id":1,"piece_index":0},"sent_at":1,"now":1},
+    {"op":"expire","now":11}
+  ]
+}

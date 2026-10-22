@@ -111,13 +111,10 @@ class Handshake(Message):
     file_id: str
     peer_id: str
 
-    type: ClassVar[str] = "handshake"
+    type: ClassVar[str] = "HANDSHAKE"
 
     def __post_init__(self) -> None:
         if not isinstance(self.protocol_version, (int, str)):
-            raise ValueError("protocol_version must be an integer or string")
-
-        if isinstance(self.protocol_version, bool):
             raise ValueError("protocol_version must be an integer or string")
 
         if not isinstance(self.file_id, str):
@@ -143,13 +140,20 @@ class Handshake(Message):
         header: Dict[str, Any],
         payload: bytes = b"",
     ) -> "Handshake":
+        from bittorrent_lite.config import PROTOCOL_VERSION
         if payload:
             raise ValueError("handshake message must not contain a payload")
+        pv = header.get("protocol_version")
+        if isinstance(pv, bool) or pv != PROTOCOL_VERSION:
+            raise ValueError(
+                f"unsupported protocol_version {pv!r}; expected {PROTOCOL_VERSION!r}"
+            )
         return cls(
             protocol_version=header["protocol_version"],
             file_id=header["file_id"],
             peer_id=header["peer_id"],
         )
+
 
 
 # ---------------------------------------------------------------------------
@@ -160,7 +164,7 @@ class Handshake(Message):
 class BitfieldMsg(Message):
     pieces: list[int]
 
-    type: ClassVar[str] = "bitfield"
+    type: ClassVar[str] = "BITFIELD"
 
     def __post_init__(self) -> None:
         if not isinstance(self.pieces, list):
@@ -195,7 +199,7 @@ class BitfieldMsg(Message):
 class Have(Message):
     piece_index: int
 
-    type: ClassVar[str] = "have"
+    type: ClassVar[str] = "HAVE"
 
     def __post_init__(self) -> None:
         self.piece_index = _require_non_negative_int(
@@ -224,7 +228,7 @@ class Have(Message):
 
 @dataclass(eq=False)
 class Interested(Message):
-    type: ClassVar[str] = "interested"
+    type: ClassVar[str] = "INTERESTED"
 
     def to_header(self) -> Dict[str, Any]:
         return {"type": self.type}
@@ -240,7 +244,7 @@ class Interested(Message):
 
 @dataclass(eq=False)
 class NotInterested(Message):
-    type: ClassVar[str] = "not_interested"
+    type: ClassVar[str] = "NOT_INTERESTED"
 
     def to_header(self) -> Dict[str, Any]:
         return {"type": self.type}
@@ -256,7 +260,7 @@ class NotInterested(Message):
 
 @dataclass(eq=False)
 class Choke(Message):
-    type: ClassVar[str] = "choke"
+    type: ClassVar[str] = "CHOKE"
 
     def to_header(self) -> Dict[str, Any]:
         return {"type": self.type}
@@ -272,7 +276,7 @@ class Choke(Message):
 
 @dataclass(eq=False)
 class Unchoke(Message):
-    type: ClassVar[str] = "unchoke"
+    type: ClassVar[str] = "UNCHOKE"
 
     def to_header(self) -> Dict[str, Any]:
         return {"type": self.type}
@@ -295,7 +299,7 @@ class Request(Message):
     request_id: int
     piece_index: int
 
-    type: ClassVar[str] = "request"
+    type: ClassVar[str] = "REQUEST"
 
     def __post_init__(self) -> None:
         self.request_id = _require_non_negative_int(
@@ -336,7 +340,7 @@ class Piece(Message):
     piece_index: int
     _payload: bytes
 
-    type: ClassVar[str] = "piece"
+    type: ClassVar[str] = "PIECE"
 
     def __init__(
         self,
@@ -405,7 +409,7 @@ class Cancel(Message):
     request_id: int
     piece_index: int
 
-    type: ClassVar[str] = "cancel"
+    type: ClassVar[str] = "CANCEL"
 
     def __post_init__(self) -> None:
         self.request_id = _require_non_negative_int(
@@ -446,7 +450,7 @@ class Reject(Message):
     piece_index: int
     reason: str
 
-    type: ClassVar[str] = "reject"
+    type: ClassVar[str] = "REJECT"
 
     def __post_init__(self) -> None:
         self.request_id = _require_non_negative_int(

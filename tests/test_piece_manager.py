@@ -1,84 +1,113 @@
-"""
-Tests for Piece Picker module (Prabhat's module).
+"""Selection and lifecycle acceptance checks against the integrated Part 1/2 APIs."""
+import random
 
-These tests validate:
-    - Availability tracking (increment on bitfield/HAVE, decrement on disconnect)
-    - Rarest-first selection picks the least replicated piece
-    - Tie-breaking doesn't always pick the same piece
-    - Already-requested pieces are excluded
-    - Returns None when no valid candidate exists
-"""
+from bittorrent_lite.scheduler.piece_picker import PiecePicker
+from request_pipeline import PipelineManager
 
-import pytest
+
+def picker():
+    p = PiecePicker(4, random.Random(17))
+    p.update_bitfield(1, [1, 1, 1, 0])
+    p.update_bitfield(2, [1, 1, 0, 1])
+    return p
+
+
+def manager():
+    p = PipelineManager(6)
+    for cid in (1, 2):
+        p.register_connection(cid, str(cid), now=0)
+        p.set_available(cid, list(range(6)), now=0)
+        p.set_permissions(cid, interested=True, unchoked=True, now=0)
+    return p
 
 
 class TestAvailability:
-    """Tests for availability counter maintenance."""
-
     def test_update_from_bitfield(self):
-        """Adding a bitfield should increment counts for owned pieces."""
-        pytest.skip("Not yet implemented")
+        p = picker()
+        assert p.availability_snapshot() == [2, 2, 1, 1]
+        p.update_bitfield(1, [0, 1, 1, 0])
+        assert p.availability_snapshot() == [1, 2, 1, 1]
 
     def test_have_increments(self):
-        """A HAVE should increment exactly one piece's count."""
-        pytest.skip("Not yet implemented")
+        p = picker()
+        p.record_have(1, 3)
+        p.record_have(1, 3)
+        assert p.availability_snapshot() == [2, 2, 1, 2]
 
     def test_disconnect_decrements(self):
-        """Disconnecting should decrement counts for all the peer's pieces."""
-        pytest.skip("Not yet implemented")
+        p = picker()
+        p.remove_connection(1)
+        assert p.availability_snapshot() == [1, 1, 0, 1]
 
     def test_availability_never_negative(self):
-        """Counts should never go below zero."""
-        pytest.skip("Not yet implemented")
+        p = picker()
+        for _ in range(3):
+            for cid in (1, 2, 99):
+                p.remove_connection(cid)
+        assert p.availability_snapshot() == [0] * 4
 
 
 class TestRarestFirst:
-    """Tests for the rarest-first selection algorithm."""
-
     def test_picks_rarest(self):
-        """Should pick the piece with the lowest availability count."""
-        pytest.skip("Not yet implemented")
+        assert picker().pick_piece([0]*4, [1, 1, 1, 0], set()) == 2
 
     def test_skips_owned_pieces(self):
-        """Should not pick a piece I already have."""
-        pytest.skip("Not yet implemented")
+        assert picker().pick_piece([0, 0, 1, 0], [1, 1, 1, 0], set()) in (0, 1)
 
     def test_skips_unavailable_pieces(self):
-        """Should not pick a piece the peer doesn't have."""
-        pytest.skip("Not yet implemented")
+        assert picker().pick_piece([0]*4, [0, 1, 0, 0], set()) == 1
 
     def test_skips_requested_pieces(self):
-        """Should not pick a piece already being requested."""
-        pytest.skip("Not yet implemented")
+        assert picker().pick_piece([0]*4, [1, 1, 1, 0], {2}) in (0, 1)
 
     def test_returns_none_when_nothing_available(self):
-        """Returns None if I have everything or peer has nothing I need."""
-        pytest.skip("Not yet implemented")
+        p = picker()
+        assert p.pick_piece([1]*4, [1]*4, set()) is None
+        assert p.pick_piece([0]*4, [0]*4, set()) is None
+        assert p.pick_piece([0]*4, [1]*4, set(range(4))) is None
 
     def test_tie_breaking_is_random(self):
-        """When multiple pieces have the same availability, selection should vary."""
-        pytest.skip("Not yet implemented")
+        p = picker()
+        chosen = [p.pick_piece([0]*4, [1]*4, set()) for _ in range(100)]
+        assert set(chosen) == {2, 3}
 
 
 class TestRequestManager:
-    """Tests for request tracking."""
-
     def test_add_and_check(self):
-        """Adding a request should make is_requested return True."""
-        pytest.skip("Not yet implemented")
+        p = manager()
+        r = p.reserve(1, 0, now=0)
+        assert r.key.piece_index == 0
+        assert p.snapshot()['piece_state_counts']['REQUESTED'] == 1
+        assert p.snapshot()['outstanding'][0]['count'] == 1
 
     def test_complete_removes(self):
-        """Completing a request should make is_requested return False."""
-        pytest.skip("Not yet implemented")
+        p = manager()
+        r = p.reserve(1, 0, now=0)
+        assert p.start_verification(r.key, now=0)
+        assert p.finish_verification(r.key, valid=True, now=0)[0].kind == 'completed'
+        assert p.snapshot()['pending'] == []
+        assert p.snapshot()['owned'] == [0]
 
     def test_duplicate_rejected(self):
-        """Adding the same piece_index twice should return False."""
-        pytest.skip("Not yet implemented")
+        p = manager()
+        assert p.reserve(1, 0, now=0)
+        assert p.reserve(1, 0, now=0) is None
+        assert p.reserve(2, 0, now=0) is None
+        assert len(p.snapshot()['pending']) == 1
 
     def test_pipelining_limit(self):
-        """Should reject requests beyond max_outstanding."""
-        pytest.skip("Not yet implemented")
+        p = manager()
+        assert len(p.fill({1: list(range(6))}, now=0)) == 4
+        assert p.reserve(1, 4, now=0) is None
+        assert p.reserve(2, 4, now=0)
 
     def test_timeout_detection(self):
-        """Old requests should appear in get_timed_out_requests."""
-        pytest.skip("Not yet implemented")
+        p = manager()
+        sent = p.reserve(1, 0, now=0)
+        unsent = p.reserve(1, 1, now=0)
+        p.confirm_sent(sent.key, sent_at=2, now=2)
+        assert p.expire(now=4) == ()
+        assert [(o.key, o.reason) for o in p.expire(now=5)] == [(unsent.key, 'send_unconfirmed')]
+        assert p.expire(now=11.99) == ()
+        assert [(o.key, o.reason) for o in p.expire(now=12)] == [(sent.key, 'response_timeout')]
+        assert p.snapshot()['pending'] == []

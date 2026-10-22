@@ -1,80 +1,87 @@
-"""
-Tests for Protocol Messages module (Anik's module).
+"""Message-object JSON round trips; TCP framing is a separate, unfinished layer.
 
-These tests validate:
-    - Each message type serializes and deserializes correctly (round-trip)
-    - Handshake encoding/decoding
-    - Bitfield encoding with correct bit packing
-    - Invalid messages are rejected
+BITFIELD uses a JSON list in the current protocol, not binary bit packing.
+REQUEST/CANCEL identify a whole piece by request ID and piece index.
 """
+import json
 
 import pytest
 
+from bittorrent_lite.protocol import messages as m
+from bittorrent_lite.config import PROTOCOL_VERSION
+
+
+def roundtrip(message):
+    header = json.loads(json.dumps(message.to_header()))
+    restored = m.MESSAGE_REGISTRY[header['type']].from_header(header, message.payload)
+    assert type(restored) is type(message)
+    assert restored.to_header() == header
+    assert restored.payload == message.payload
+    return restored
+
 
 class TestMessageSerialization:
-    """Round-trip tests for all message types."""
-
     def test_choke_roundtrip(self):
-        """Choke → serialize → deserialize → Choke."""
-        pytest.skip("Not yet implemented")
+        assert roundtrip(m.Choke()).to_header() == {'type': 'CHOKE'}
 
     def test_unchoke_roundtrip(self):
-        """Unchoke → serialize → deserialize → Unchoke."""
-        pytest.skip("Not yet implemented")
+        assert roundtrip(m.Unchoke()).to_header() == {'type': 'UNCHOKE'}
 
     def test_interested_roundtrip(self):
-        pytest.skip("Not yet implemented")
+        assert roundtrip(m.Interested()).to_header() == {'type': 'INTERESTED'}
 
     def test_not_interested_roundtrip(self):
-        pytest.skip("Not yet implemented")
+        assert roundtrip(m.NotInterested()).to_header() == {'type': 'NOT_INTERESTED'}
 
     def test_have_roundtrip(self):
-        """Have(piece_index=42) → serialize → deserialize → Have(42)."""
-        pytest.skip("Not yet implemented")
+        assert roundtrip(m.Have(42)).piece_index == 42
 
     def test_bitfield_roundtrip(self):
-        """Bitfield → serialize → deserialize → verify all bits match."""
-        pytest.skip("Not yet implemented")
+        original = m.BitfieldMsg([1, 0, 1])
+        restored = roundtrip(original)
+        original.pieces[0] = 0
+        assert restored.pieces == [1, 0, 1]
 
     def test_request_roundtrip(self):
-        """Request(index, offset, length) → round-trip."""
-        pytest.skip("Not yet implemented")
+        r = roundtrip(m.Request(17, 3))
+        assert (r.request_id, r.piece_index) == (17, 3)
 
     def test_piece_roundtrip(self):
-        """Piece(index, offset, data) → round-trip, verify data intact."""
-        pytest.skip("Not yet implemented")
+        data = bytes(range(256)) * 256
+        r = roundtrip(m.Piece(17, 3, data))
+        assert (r.request_id, r.piece_index, r.payload) == (17, 3, data)
+        assert r.to_header()['payload_length'] == len(data)
 
     def test_cancel_roundtrip(self):
-        pytest.skip("Not yet implemented")
+        r = roundtrip(m.Cancel(17, 3))
+        assert (r.request_id, r.piece_index) == (17, 3)
 
 
 class TestHandshake:
-    """Tests for handshake message."""
-
     def test_handshake_roundtrip(self):
-        """Handshake with peer_id and info_hash → serialize → parse."""
-        pytest.skip("Not yet implemented")
+        r = roundtrip(m.Handshake(PROTOCOL_VERSION, 'f'*64, 'peer-1'))
+        assert (r.protocol_version, r.file_id, r.peer_id) == (PROTOCOL_VERSION, 'f'*64, 'peer-1')
 
     def test_handshake_wrong_protocol(self):
-        """Wrong protocol name should be rejected."""
-        pytest.skip("Not yet implemented")
+        # This protocol carries a numeric version, not a protocol-name field.
+        for version in (PROTOCOL_VERSION + 1, True, str(PROTOCOL_VERSION), None):
+            header = m.Handshake(version, 'f'*64, 'peer-1').to_header()
+            with pytest.raises(ValueError):
+                m.Handshake.from_header(header, b'')
 
 
 class TestBitfieldEncoding:
-    """Tests for bitfield bit-packing."""
-
     def test_bitfield_10_pieces(self):
-        """10 pieces with known pattern → verify byte encoding."""
-        pytest.skip("Not yet implemented")
+        bits = [1, 0, 1, 1, 0, 0, 1, 0, 1, 0]
+        assert roundtrip(m.BitfieldMsg(bits)).to_header() == {'type': 'BITFIELD', 'pieces': bits}
 
     def test_bitfield_exact_byte_boundary(self):
-        """8 pieces → exactly 1 byte, no spare bits."""
-        pytest.skip("Not yet implemented")
+        # Eight pieces remain eight JSON entries, not a packed byte.
+        bits = [1, 0] * 4
+        assert roundtrip(m.BitfieldMsg(bits)).pieces == bits
 
     def test_bitfield_all_true(self):
-        """All pieces owned → all bits set."""
-        pytest.skip("Not yet implemented")
+        assert roundtrip(m.BitfieldMsg([1]*10)).pieces == [1]*10
 
     def test_bitfield_all_false(self):
-        """No pieces owned → all bits clear."""
-        pytest.skip("Not yet implemented")
+        assert roundtrip(m.BitfieldMsg([0]*10)).pieces == [0]*10
