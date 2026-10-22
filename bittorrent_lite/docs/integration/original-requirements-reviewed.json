@@ -1,7 +1,7 @@
 {
   "schema": "btl-semantic-original-review-v1",
   "construction_status": "COMPLETE_SOURCE_REVIEW_WITH_EXPLICIT_BLOCKED_GAPS",
-  "reviewer": "Codex requirements_audit; not independent acceptance verifier",
+  "reviewer": "OpenAI coding assistant requirements_audit; not independent acceptance verifier",
   "execution_status": "NOT_RUN_BY_REVIEW",
   "source_documents": {
     "G": {

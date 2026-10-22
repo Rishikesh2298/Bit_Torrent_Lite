@@ -7,7 +7,7 @@
 ## Part 1
 
 - **Tool:** Claude (Sonnet 5.5 / Opus 5.5), accessed through the coding assistant used for the project
-- **Additional tool:** OpenAI Codex (repository review, picker assistance and regression fixes)
+- **Additional tool:** OpenAI coding assistant (repository review, picker assistance and regression fixes)
 - **Period:** September–October 2026
 
 ## Part 2
@@ -68,8 +68,8 @@ handoff; no real-network acceptance result is claimed.
 | Date | Member | What AI Helped With | Category |
 |---|---|---|---|
 | 2026-09-15 | All | Architecture design, module interfaces, project scaffolding | Design & Boilerplate |
-| 2026-10-04 | Prabhat | OpenAI Codex audited progress, assisted the initial neighborhood availability and rarest-first picker implementation, wrote contract/import tests, repaired stale shared-type imports and an unused missing-constant import, and documented remaining work. This includes AI assistance with core selection code; Prabhat must review, understand and check course rules before submission. | Implementation Assistance, Testing, Integration Review & Documentation |
-| 2026-10-04 | Prabhat | At the user's request for extensive repository testing, Codex reproduced and fixed validation, stale piece-state, source verification, output preservation and peer-state defects; wired the existing metadata CLI to implemented functions; added boundary, fault-injection, randomized and concurrent tests; corrected README status. | Debugging, Regression Testing & Documentation |
+| 2026-10-04 | Prabhat | OpenAI coding assistant audited progress, assisted the initial neighborhood availability and rarest-first picker implementation, wrote contract/import tests, repaired stale shared-type imports and an unused missing-constant import, and documented remaining work. This includes AI assistance with core selection code; Prabhat must review, understand and check course rules before submission. | Implementation Assistance, Testing, Integration Review & Documentation |
+| 2026-10-04 | Prabhat | At the user's request for extensive repository testing, The OpenAI coding assistant reproduced and fixed validation, stale piece-state, source verification, output preservation and peer-state defects; wired the existing metadata CLI to implemented functions; added boundary, fault-injection, randomized and concurrent tests; corrected README status. | Debugging, Regression Testing & Documentation |
 | 2026-10-16 | Debargha | Claude (Sonnet 5.5 / Opus 5.5) was used as a supporting tool during development, primarily to investigate bugs, refine existing code, review edge cases, and assist with generating and improving tests. It also provided implementation suggestions for parts of the tracker, discovery client, and experiment scripts. Debargha was responsible for reviewing and validating changes and should be able to explain the submitted work. | Debugging, Refinement, Test Assistance & Limited Implementation Support |
 | | | | |
 
@@ -151,7 +151,7 @@ stress validation. No commit, push, merge or history rewrite was performed.
 ## 22 October 2026 — final acceptance preparation, in progress
 
 The user authorized final acceptance preparation, testing and necessary repairs.
-Codex and cooperating agents authored acceptance recorders, process guardians,
+The OpenAI coding assistant and cooperating agents authored acceptance recorders, process guardians,
 strict evidence/collection verifiers, fault helpers, portability/build checks,
 coverage support, telemetry and additional regression tests. Repairs include
 bounded storage reads, controlled parser errors, logging order/descriptor cleanup,

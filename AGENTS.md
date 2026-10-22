@@ -2,7 +2,7 @@
 
 ## Future Git naming
 
-- Do not include `codex` (case-insensitive) in any newly created branch name or commit message, including the subject, body, and trailers.
+- Use project-focused wording in newly created branch names and commit messages, including subjects, bodies, and trailers; omit assistant product branding.
 - Use descriptive branch names such as `prabhat/request-pipeline`, `feature/upload-service`, or `fix/request-timeouts`. Follow an explicitly requested contributor or feature prefix; do not rename existing branches merely to apply this convention.
 - Write commit messages describing the actual change, for example `Add bounded upload handling and cancellation`.
 - Before creating a commit or publishing a merge, check the full proposed message and branch name against this rule, including automatically generated merge text.
