@@ -148,3 +148,20 @@ def test_own_address_as_tracker_means_local_and_peers_start_it(gui, tmp_path):
     state = call(base, "/api/peers/start", {"file_id": file_id, "role": "seeder"})
     assert state["tracker"]["running"]          # started for the seeder, not left to the person
     assert app.probe_tracker(state["tracker_url"])["ok"]
+
+
+def test_remove_one_and_remove_all_stop_peers_and_keep_files(gui, tmp_path):
+    app, base = gui
+    ids = []
+    for name in ("e.bin", "f.bin", "g.bin"):
+        source = tmp_path / name
+        source.write_bytes(name.encode() * 500)
+        ids.append(call(base, "/api/torrents/create", {"source": str(source)})["torrent"]["file_id"])
+    call(base, "/api/peers/start", {"file_id": ids[0], "role": "seeder"})
+    state = call(base, "/api/torrents/remove", {"file_id": ids[0]})     # stops its seeder first
+    assert [t["file_id"] for t in state["torrents"]] == ids[1:]
+    assert not state["peers"]
+    state = call(base, "/api/torrents/remove_all", {})
+    assert state["torrents"] == []
+    assert (tmp_path / "e.bin").is_file()
+    assert len(list((app.workdir / "torrents").glob("*.torrent.json"))) == 3

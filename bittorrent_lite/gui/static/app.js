@@ -177,10 +177,11 @@ function updateSwarms() {
   const st = S.state; const t = currentTorrent();
   const top = $('#sw-top'); const body = $('#sw-body');
   if (!top) return;
-  const tabs = st.torrents.map(x => `<button class="tab" role="tab" aria-selected="${t && x.file_id === t.file_id}" data-torrent="${x.file_id}" title="${esc(x.filename)}">${esc(x.filename)}</button>`).join('');
+  const tabs = st.torrents.map(x => `<span class="tabwrap" aria-selected="${t && x.file_id === t.file_id}"><button class="tab" role="tab" aria-selected="${t && x.file_id === t.file_id}" data-torrent="${x.file_id}" title="${esc(x.filename)}">${esc(x.filename)}</button><button class="tab-x" data-remove="${x.file_id}" aria-label="Remove ${esc(x.filename)}" title="Remove from the list">${ICON.close}</button></span>`).join('');
   morph(top, `<div class="tabs" role="tablist" aria-label="Torrents">${tabs}
       <button class="btn btn-ghost btn-sm" data-act="open-torrent">${ICON.plus}Open .torrent.json</button>
-      <button class="btn btn-ghost btn-sm" data-act="join">${ICON.join}Join swarm</button></div>
+      <button class="btn btn-ghost btn-sm" data-act="join">${ICON.join}Join swarm</button>
+      ${st.torrents.length > 1 ? '<button class="btn btn-danger btn-sm" data-act="remove-all">Remove all</button>' : ''}</div>
     ${t ? `<button class="btn btn-ghost" data-act="share">${ICON.share}Share</button>` : ''}`);
   if (!t) { morph(body, emptyState()); return; }
   const peers = st.peers.filter(p => p.file_id === t.file_id);
@@ -204,6 +205,7 @@ function updateSwarms() {
           <div class="help" style="margin-top: 4px">${bytes(t.file_size)} · ${t.num_pieces} pieces × ${bytes(t.piece_size)} · file_id <span class="mono">${short(t.file_id)}</span></div></div>
         <a class="btn btn-ghost" href="/api/torrents/${t.file_id}/file" download>Download .torrent.json</a>
         <button class="btn btn-ghost" data-act="quick">Quick swarm</button>
+        <button class="btn btn-danger" data-act="remove-torrent" title="Remove from this list; files on disk are kept">Remove</button>
         <button class="btn btn-primary" data-act="add-peer">${ICON.plus}Add peer</button>
       </div>
       ${warn.join('')}
@@ -240,10 +242,11 @@ function emptyState() {
 function peerRow(p) {
   const pct = Math.round(100 * p.owned / p.total);
   return `<button class="row" role="row" aria-selected="${p.peer_id === S.peer}" data-peer="${esc(p.peer_id)}">
-    <div style="min-width: 0"><div class="pid">${esc(p.peer_id)}</div><div class="help">${p.role === 'seeder' ? 'Seeder' : 'Downloader'}${p.free_rider ? ' (free rider)' : ''} · :${p.port}</div></div>
+    <div style="min-width: 0"><div class="pid" title="${esc(p.peer_id)}">${esc(p.peer_id)}</div><div class="help">${p.role === 'seeder' ? 'Seeder' : 'Downloader'}${p.free_rider ? ' (free rider)' : ''} · :${p.port}</div></div>
     <div>${badge(p)}</div>
     <div class="inline" style="gap: 10px"><div class="bar" style="flex: 1"><div style="width: ${pct}%"></div></div><span class="help" style="min-width: 64px; text-align: right">${p.owned}/${p.total}</span></div>
-    <div class="num">${p.connected}</div><div class="num">${rate(p.down_rate)}</div><div class="num">${bytes(p.up_bytes)}</div></button>`;
+    <div class="num">${p.connected}</div><div class="num">${rate(p.down_rate)}</div><div class="num">${bytes(p.up_bytes)}</div>
+    <div class="num compact">${p.connected} peers · ↓ ${rate(p.down_rate)} · ↑ ${bytes(p.up_bytes)}</div></button>`;
 }
 
 function seenByTracker(t) {
@@ -598,6 +601,14 @@ function openTorrentDialog() {
   };
 }
 
+function removeTorrent(fileId) {
+  const t = S.state.torrents.find(x => x.file_id === fileId); if (!t) return;
+  const running = S.state.peers.filter(p => p.file_id === fileId && p.running).length;
+  if (!confirm(`Remove ${t.filename} from the list?${running ? ` This first stops its ${running} running peer(s).` : ''} The original file, downloads and .torrent.json stay on disk.`)) return;
+  if (S.torrent === fileId) { S.torrent = null; S.peer = null; }
+  return act('/api/torrents/remove', { file_id: fileId }, 'Removed ' + t.filename);
+}
+
 async function quickSwarm() {
   const t = currentTorrent();
   if (!t.source) return toast('Quick swarm needs the original file on this computer (it starts a seeder and 3 downloaders).', true);
@@ -766,6 +777,8 @@ function figureDialog(name) {
 // ---------- one click handler for the page ----------
 
 document.addEventListener('click', async e => {
+  const rm = e.target.closest('[data-remove]');
+  if (rm) return removeTorrent(rm.dataset.remove);
   const tab = e.target.closest('[data-torrent]');
   if (tab) { S.torrent = tab.dataset.torrent; S.peer = null; return render(); }
   const row = e.target.closest('[data-peer]');
@@ -784,6 +797,13 @@ document.addEventListener('click', async e => {
     case 'open-torrent': return openTorrentDialog();
     case 'add-peer': return addPeerDialog();
     case 'quick': return quickSwarm();
+    case 'remove-torrent': return removeTorrent(t.file_id);
+    case 'remove-all': {
+      const n = S.state.torrents.length; const running = S.state.peers.filter(p => p.running).length;
+      if (!confirm(`Remove all ${n} torrents from the list?${running ? ` This first stops ${running} running peer(s).` : ''} Files on disk are kept.`)) return;
+      btn.disabled = true; S.torrent = null; S.peer = null;
+      return act('/api/torrents/remove_all', {}, `Removed ${n} torrents`);
+    }
     case 'stop-all': return act('/api/peers/stop_all', { file_id: t.file_id }, 'Stopping all peers');
     case 'stop-peer': return act('/api/peers/stop', { peer_id: S.peer });
     case 'restart-peer': return act('/api/peers/restart', { peer_id: S.peer }, 'Restarted ' + S.peer);
