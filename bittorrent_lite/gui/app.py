@@ -286,12 +286,23 @@ class GuiApp:
             raise UserError(f"size differs from the torrent ({entry['file_size']} bytes)")
         return {"torrent": self._register_torrent(Path(entry["path"]), source=str(path.resolve()))}
 
-    def remove_torrent(self, file_id: str) -> dict:
+    def remove_torrents(self, file_ids: list | None) -> dict:
+        """Take torrents off the list (all when file_ids is None), stopping their peers first.
+        Nothing is deleted from disk: sources, downloads and .torrent.json files stay."""
+        targets = set(self.torrents) if file_ids is None else {f for f in file_ids if f in self.torrents}
+        peers = [p for p in self.peers.values() if p.torrent["file_id"] in targets]
+        for proc in peers:
+            proc.request_stop()
+        deadline = time.time() + 25
+        while time.time() < deadline and any(p.running for p in peers):
+            time.sleep(0.2)
+        if any(p.running for p in peers):
+            raise UserError("some peers did not stop in time; try again")
         with self.lock:
-            if any(p.running and p.torrent["file_id"] == file_id for p in self.peers.values()):
-                raise UserError("stop this torrent's peers first")
-            self.torrents.pop(file_id, None)
-            self.peers = {k: p for k, p in self.peers.items() if p.torrent["file_id"] != file_id}
+            for file_id in targets:
+                self.torrents.pop(file_id, None)
+                self.settings.get("sources", {}).pop(file_id, None)
+            self.peers = {k: p for k, p in self.peers.items() if p.torrent["file_id"] not in targets}
             self._save_settings()
         return self.state()
 
