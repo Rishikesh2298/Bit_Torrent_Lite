@@ -69,6 +69,7 @@ class GuiApp:
         self.addresses = netinfo.local_addresses()
         if self.settings.get("advertise_ip") not in {a["ip"] for a in self.addresses}:
             self.settings["advertise_ip"] = netinfo.default_address(self.addresses)
+        self._localise_tracker_setting()
         self.torrents = {}
         for path in self.settings.get("torrents", []):
             try:
@@ -117,8 +118,28 @@ class GuiApp:
             if "tracker_url" in body:
                 url = (body["tracker_url"] or "").strip()
                 self.settings["tracker_url"] = self._normalise_tracker(url) if url else None
+                self._localise_tracker_setting()
             self._save_settings()
         return self.state()
+
+    def _localise_tracker_setting(self):
+        """A tracker address naming this computer means 'my own tracker', which the GUI starts itself."""
+        url = self.settings.get("tracker_url")
+        if not url:
+            return
+        parts = urlsplit(url)
+        local = {a["ip"] for a in self.addresses} | {"localhost"}
+        if parts.hostname in local:
+            self.settings["tracker_url"] = None
+            self.settings["tracker_port"] = parts.port or TRACKER_PORT
+
+    def tracker_is_local(self) -> bool:
+        return not self.settings.get("tracker_url")
+
+    def _ensure_local_tracker(self):
+        """Peers announcing to this computer's tracker need it running; start it if it is not."""
+        if self.tracker_is_local() and not (self.tracker and self.tracker.running):
+            self.start_tracker()
 
     def _local_tracker_url(self) -> str:
         return f"http://{self.settings['advertise_ip']}:{self.settings.get('tracker_port', TRACKER_PORT)}"
@@ -449,6 +470,7 @@ class GuiApp:
         requested = body.get("peers") or []
         if not requested:
             requested = self.suggest({"role": spec["role"], "count": body.get("count", 1)})["peers"]
+        self._ensure_local_tracker()
         started = []
         with self.lock:
             taken = self._taken_ids()
@@ -491,6 +513,7 @@ class GuiApp:
         if old.running:
             raise UserError("stop the peer before restarting it")
         entry = self.torrent(old.torrent["file_id"])
+        self._ensure_local_tracker()
         with self.lock:
             if not netinfo.port_is_free(int(old.spec["port"])):
                 old.spec["port"] = netinfo.next_free_port(int(old.spec["port"]) + 1, self._taken_ports())
