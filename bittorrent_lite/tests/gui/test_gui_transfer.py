@@ -133,3 +133,18 @@ def test_join_another_gui_fetches_torrent_and_tracker(gui, tmp_path, monkeypatch
     assert laptop.tracker_url() == joined["tracker"]
     with pytest.raises(Exception, match="this computer's own GUI"):
         host.join("127.0.0.1")
+
+
+def test_own_address_as_tracker_means_local_and_peers_start_it(gui, tmp_path):
+    app, base = gui
+    own = app.settings["advertise_ip"]
+    port = app.settings["tracker_port"]
+    state = call(base, "/api/settings", {"tracker_url": f"{own}:{port}"})
+    assert not state["tracker_custom"]
+    assert state["tracker_url"] == f"http://{own}:{port}"
+    source = tmp_path / "d.bin"
+    source.write_bytes(b"w" * 3000)
+    file_id = call(base, "/api/torrents/create", {"source": str(source)})["torrent"]["file_id"]
+    state = call(base, "/api/peers/start", {"file_id": file_id, "role": "seeder"})
+    assert state["tracker"]["running"]          # started for the seeder, not left to the person
+    assert app.probe_tracker(state["tracker_url"])["ok"]
