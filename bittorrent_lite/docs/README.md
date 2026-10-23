@@ -7,7 +7,7 @@ are relative to the `BitTorrent/` repository root unless stated otherwise.
 - [Member ownership](ownership.md)
 - [Original project guide](plans/original/BitTorrent-Lite-Revised-Project-Guide.md)
 - [Rishikesh: storage](rishikesh/README.md)
-- [Debargha: tracker](debargha/tracker.md), [experiments](debargha/experiment-method.md), [log events](debargha/log-events.md)
+- [Debargha: tracker](debargha/tracker.md), [experiments](debargha/experiment-method.md), [log events](debargha/log-events.md), [browser GUI](debargha/gui.md)
 - [Anik: protocol](anik/protocol_spec.md)
 - [Prabhat: scheduler](prabhat/scheduler.md), [requests](prabhat/request-pipeline.md), [recovery](prabhat/recovery-policy.md), [uploads](prabhat/upload-and-choking.md)
 - [Integration handoff](integration/peer-runtime-handoff.md)

@@ -95,6 +95,17 @@ feature/test claims below refer to the pre-migration work.
 python -m pip install -e ".[test,experiments]"
 ```
 
+### Browser GUI
+
+```bash
+python -m bittorrent_lite.gui
+```
+
+Opens a page in your browser that starts the tracker, creates torrents, seeds,
+joins another laptop's swarm by its address and shows live progress with an
+automatic hash check. See the [GUI guide](bittorrent_lite/docs/debargha/gui.md).
+The command-line steps below do the same by hand.
+
 ### 1. Generate Metadata
 
 ```bash
